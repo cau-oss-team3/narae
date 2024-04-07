@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.3.0
+    command: --default-authentication-plugin=mysql_native_password --secure-file-priv=/var/lib/mysql-files
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE: narae
+      MYSQL_USER: narae
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_user_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - db_backup:/var/lib/mysql-files
+    networks:
+      - db-network
+    ports:
+      - '3306:3306'
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      timeout: 20s
+      retries: 10
+    secrets:
+      - mysql_root_password
+      - mysql_user_password
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_USER: narae
+      PMA_PASSWORD_FILE: /run/secrets/mysql_user_password
+      UPLOAD_LIMIT: 50M
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    networks:
+      - db-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    secrets:
+      - mysql_user_password
+
+volumes:
+  db_data:
+  db_backup:
+
+networks:
+  db-network:
+
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password.txt
+  mysql_user_password:
+    file: ./secrets/mysql_user_password.txt
