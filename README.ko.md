@@ -71,23 +71,16 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ### Docker를 사용하여 Narae 실행하기
 
-1. 저장소 복제:
+1. 최신 이미지를 가져오고 컨테이너 실행하기:
+
+최신 도커 이미지는 매번 빌드하여 [Docker Hub](https://hub.docker.com/r/codinggroot/narae/tags)에 업로드됩니다.
 
 ```sh
-git clone https://github.com/cau-oss-team3/narae.git
-cd narae
-```
-
-2. Docker 이미지를 빌드하고 컨테이너 실행하기:
-
-```sh
-# Docker 이미지 빌드
-docker build -t narae .
 # Docker 컨테이너 실행 (이때, 이 저장소에서 테스트용으로 제공하는 docker-compose의 네트워크인 narae_db-network가 있다고 가정합니다.)
-docker run --network=narae_db-network -p 80:8000 narae:latest
+docker run --env-file ./app/.env --network=narae_db-network -p 80:8000 codinggroot/narae:latest
 ```
 
-3. http://localhost:8000 에서 Narae에 접속하기
+2. http://localhost:8000 에서 Narae에 접속하기
 
 ## 라이센스
 

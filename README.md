@@ -70,23 +70,16 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ### Running Narae Using Docker
 
-1. Clone the Repository:
+1. Pull latest image and run the container:
+
+Our latest changes are pushed to [Docker Hub](https://hub.docker.com/r/codinggroot/narae/tags), so you can pull the latest image and run the container using the following command:
 
 ```sh
-git clone https://github.com/cau-oss-team3/narae.git
-cd narae
-```
-
-2. Build the Docker Image and run the Container:
-
-```sh
-# Build the Docker Image
-docker build -t narae .
 # Run the Docker Container (this command assumes that you have a network called narae_db-network)
-docker run --network=narae_db-network -p 80:8000 narae:latest
+docker run --env-file ./app/.env --network=narae_db-network -p 80:8000 codinggroot/narae:latest
 ```
 
-3. Access Narae at http://localhost:8000
+2. Access Narae at http://localhost:8000
 
 ## License
 
