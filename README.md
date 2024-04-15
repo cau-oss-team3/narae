@@ -1,6 +1,6 @@
 # Narae
 
-Languages: \[한국어\] | \[[English](README.md)\]
+Languages: \[English\] | [\[한국어\]](README.ko.md)
 
 ## Features
 

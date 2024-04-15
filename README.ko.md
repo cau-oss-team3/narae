@@ -1,6 +1,6 @@
 # 나래
 
-Languages: \[한국어\] | \[[English](README.md)\]
+Languages: \[한국어\] | [\[English\]](README.md)
 
 ## 기능
 
