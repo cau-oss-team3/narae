@@ -3,8 +3,10 @@ name: Docker image build and push
 on:
   push:
     branches: [ "main" ]
+    paths: [ "app/**", "requirements.txt", ".dockerignore", "Dockerfile" ]
   pull_request:
     branches: [ "main" ]
+    paths: [ "app/**", "requirements.txt", ".dockerignore", "Dockerfile" ]
 
 jobs:
   docker:
