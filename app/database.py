@@ -1,21 +1,19 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
+from app.config import Config
+from app.logger import logger
 
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_DATABASE = os.getenv("DB_DATABASE")
-DB_HOST = os.getenv("DB_HOST")
+def setup_database():
+    database_url = Config.get_database_url()
+    engine = create_engine(database_url)
+    logger.info('DB: Connected to database')
 
-DATABASE_URL = f"mysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_DATABASE}"
+    Base.metadata.create_all(bind=engine)
+    logger.info('DB: Created tables')
 
-engine = create_engine(DATABASE_URL)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-print('INFO: Connected to database')
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    return SessionLocal
 
 Base = declarative_base()
