@@ -66,12 +66,12 @@ GPT_TOKEN=your_gpt_token # Get your GPT token from https://beta.openai.com/accou
 
 2. 가상 환경 설정:
 
-python3은 `3.11` 버전을 사용해야 합니다.
+   python3은 `3.11` 버전을 사용해야 합니다.
 
-    ```sh
-    python3 -m venv .venv
-    source .venv/bin/activate
-    ```
+   ```sh
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
 
 3. Dependency 설치:
 
