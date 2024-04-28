@@ -1,53 +1,69 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.3.0
-    command: --default-authentication-plugin=mysql_native_password --secure-file-priv=/var/lib/mysql-files
+  postgres:
+    container_name: postgres_container
+    image: postgres:16
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
-      MYSQL_DATABASE: narae
-      MYSQL_USER: narae
-      MYSQL_PASSWORD_FILE: /run/secrets/mysql_user_password
+      POSTGRES_DB: narae
+      POSTGRES_USER: narae
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_user_password
+      PGDATA: /data/postgres
     volumes:
-      - db_data:/var/lib/mysql
-      - db_backup:/var/lib/mysql-files
+      - pg_data:/data/postgres
     networks:
       - narae-network
     ports:
-      - 3306:3306
+      - 5432:5432
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      timeout: 20s
-      retries: 10
+      test: ['CMD', 'pg_isready', '-U', 'narae']
+      interval: 30s
+      timeout: 10s
+      retries: 5
     secrets:
-      - mysql_root_password
-      - mysql_user_password
+      - postgres_user_password
 
-  adminer:
-    image: adminer:4.8.1-standalone
-    restart: always
-    environment:
-      ADMINER_DEFAULT_SERVER: mysql
-      ADMINER_DESIGN: pepa-linha-dark
-    ports:
-      - 8080:8080
+  # adminer:
+  #   image: adminer:4.8.1-standalone
+  #   restart: always
+  #   environment:
+  #     ADMINER_DEFAULT_SERVER: postgres
+  #     ADMINER_DESIGN: pepa-linha-dark
+  #   ports:
+  #     - 8080:8080
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - narae-network
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:8.5
+    restart: unless-stopped
     depends_on:
-      - mysql
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dury.ko@gmail.com
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/postgres_user_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pg_admin:/var/lib/pgadmin
+    ports:
+      - 8080:80
     networks:
       - narae-network
+    secrets:
+      - postgres_user_password
 
 volumes:
-  db_data:
-  db_backup:
+  pg_data:
+  pg_admin:
 
 networks:
   narae-network:
     external: true
 
 secrets:
-  mysql_root_password:
-    file: ./secrets/mysql_root_password.txt
-  mysql_user_password:
-    file: ./secrets/mysql_user_password.txt
+  postgres_user_password:
+    file: ./secrets/pg_user_password.txt

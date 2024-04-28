@@ -11,8 +11,8 @@ class Config:
         self.DB_HOST = os.getenv("DB_HOST")
 
     def get_database_url(self):
-        return f"mysql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}/{self.DB_DATABASE}"
-    
+        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}/{self.DB_DATABASE}"
+
     def get_env_path(self):
         """
         Finds the absolute path of the .env file.
