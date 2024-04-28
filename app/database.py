@@ -5,8 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from app.config import Config
 from app.logger import logger
 
-def setup_database():
-    database_url = Config.get_database_url()
+def setup_database(config):
+    database_url = config.get_database_url()
     engine = create_engine(database_url)
     logger.info('DB: Connected to database')
 

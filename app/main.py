@@ -1,12 +1,14 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.config import Config
 from app.models import Item
 from app.database import setup_database
 from app.schemas import ItemCreate
 
 app = FastAPI()
-SessionLocal = setup_database()
+config = Config()
+SessionLocal = setup_database(config)
 
 # Dependency: Database Session
 def get_db():
