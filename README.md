@@ -13,7 +13,7 @@ To run Narae, you will need the following software:
 - Docker
 - Python 3.11
 
-Additionally, a MySQL database is required for Narae.
+Additionally, a Postgres database is required for Narae.
 
 To quickly start development, use the following commands to launch the required services:
 
@@ -27,8 +27,7 @@ To quickly start development, use the following commands to launch the required 
 
    ```sh
    mkdir secrets
-   echo "my_root_password" > secrets/mysql_root_password.txt
-   echo "my_user_password" > secrets/mysql_user_password.txt
+   echo "my_user_password" > secrets/pg_user_password.txt
    ```
 
 3. Launch with Docker Compose:
@@ -37,7 +36,7 @@ To quickly start development, use the following commands to launch the required 
    docker compose up -d
    ```
 
-**Adminer**, a web-based MySQL client, will run concurrently to facilitate database testing. You can access it at http://localhost:8080 if needed.
+**pgamdin4**, a web-based Postgres client, will run concurrently to facilitate database testing. You can access it at http://localhost:8080 if needed.
 
 ### Initial Setup
 
@@ -46,10 +45,10 @@ After all necessary services are configured, you must set up environment variabl
 Required environment variables are as follows:
 
 ```dotenv
-DB_USER=db_user_name # e.g., narae
-DB_PASSWORD=db_password # e.g., my_awesome_password
-DB_DATABASE=db_name # e.g., narae
-DB_HOST=db_host # e.g., 127.0.0.1
+DB_USER=db_user_name # e.g. narae
+DB_PASSWORD=db_password # e.g. my_awesome_password
+DB_DATABASE=db_name # e.g. narae
+DB_HOST=db_host # e.g. 127.0.0.1, postgres
 GPT_TOKEN=your_gpt_token # Obtain your GPT token from https://beta.openai.com/account/api-keys
 ```
 

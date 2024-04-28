@@ -13,7 +13,7 @@ Narae를 실행하기 위해서는 다음과 같은 프로그램이 필요합니
 - Docker
 - Python 3.11
 
-또한, Narae는 MySQL 데이터베이스가 필요합니다.
+또한, Narae는 Postgres 데이터베이스가 필요합니다.
 
 빠르게 개발을 시작하려면 다음 명령어를 사용하여 필요한 서비스를 시작하세요.
 
@@ -27,8 +27,7 @@ Narae를 실행하기 위해서는 다음과 같은 프로그램이 필요합니
 
    ```sh
    mkdir secrets
-   echo "my_root_password" > secrets/mysql_root_password.txt
-   echo "my_user_password" > secrets/mysql_user_password.txt
+   echo "my_user_password" > secrets/pg_user_password.txt
    ```
 
 3. 도커 컴포즈로 실행합니다.
@@ -37,7 +36,7 @@ Narae를 실행하기 위해서는 다음과 같은 프로그램이 필요합니
    docker compose up -d
    ```
 
-데이터베이스를 간단하게 테스트할 수 있도록 MySQL 웹 클라이언트인 **Adminer**가 함께 실행됩니다. 필요한 경우 http://localhost:8080 에서 접속할 수 있습니다.
+데이터베이스를 간단하게 테스트할 수 있도록 Postgres 웹 클라이언트인 **pgamdin4**가 함께 실행됩니다. 필요한 경우 http://localhost:8080 에서 접속할 수 있습니다.
 
 ### 초기 설정
 
@@ -46,11 +45,11 @@ Narae를 실행하기 위해서는 다음과 같은 프로그램이 필요합니
 필요한 환경 변수는 다음과 같습니다:
 
 ```dotenv
-DB_USER=db_user_name # e.g. narae_user
+DB_USER=db_user_name # e.g. narae
 DB_PASSWORD=db_password # e.g. my_awesome_password
-DB_DATABASE=db_name # e.g. narae_db
-DB_HOST=db_host # e.g. 127.0.0.1
-GPT_TOKEN=your_gpt_token # Get your GPT token from https://beta.openai.com/account/api-keys
+DB_DATABASE=db_name # e.g. narae
+DB_HOST=db_host # e.g. 127.0.0.1, postgres
+GPT_TOKEN=your_gpt_token # Obtain your GPT token from https://beta.openai.com/account/api-keys
 ```
 
 ## 실행 방법
