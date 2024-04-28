@@ -9,9 +9,13 @@ class Config:
         self.DB_PASSWORD = os.getenv("DB_PASSWORD")
         self.DB_DATABASE = os.getenv("DB_DATABASE")
         self.DB_HOST = os.getenv("DB_HOST")
+        self.GPT_TOKEN = os.getenv("GPT_TOKEN")
 
     def get_database_url(self):
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}/{self.DB_DATABASE}"
+
+    def get_openapi_key(self):
+        return self.GPT_TOKEN
 
     def get_env_path(self):
         """
