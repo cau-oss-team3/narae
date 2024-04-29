@@ -7,9 +7,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def login():
     return {"message": "Login"}
 
+
 @router.get("/logout")
 def logout():
     return {"message": "Logout"}
+
 
 @router.get("/register")
 def register():

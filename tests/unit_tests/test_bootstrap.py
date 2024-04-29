@@ -10,6 +10,7 @@ def mock_apply_middleware():
     with patch("app.bootstrap.apply_middleware") as mock:
         yield mock
 
+
 @pytest.fixture
 def mock_apply_routes():
     with patch("app.bootstrap.apply_routes") as mock:

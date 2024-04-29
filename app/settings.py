@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     debug: bool = False
     base_url: str = "http://localhost:8000"
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    timeout: int = 30 # seconds
+    timeout: int = 30  # seconds
 
     # secret_key: str
     cors_origins: List[str]

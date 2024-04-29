@@ -3,26 +3,33 @@ from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends
 from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncAttrs,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from app.settings import settings
 
 
-logger = logging.getLogger('database')
+logger = logging.getLogger("database")
 
 POSTGRES_INDEXES_NAMING_CONVENTION = {
-    'ix': 'ix_%(table_name)s_%(column_0_label)s',
-    'uq': 'uq_%(table_name)s_%(column_0_name)s',
-    'ck': 'ck_%(table_name)s_%(constraint_name)s',
-    'fk': 'fk_%(table_name)s_%(column_0_name)s_to_%(referred_table_name)s',
-    'pk': 'pk_%(table_name)s',
+    "ix": "ix_%(table_name)s_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_to_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
 }
 
 metadata = MetaData(naming_convention=POSTGRES_INDEXES_NAMING_CONVENTION)
 
-asyncio_engine = create_async_engine(settings.database.database_url, echo=settings.debug)
+asyncio_engine = create_async_engine(
+    settings.database.database_url, echo=settings.debug
+)
 AsyncSessionFactory = async_sessionmaker(
     asyncio_engine,
     autocommit=False,
@@ -36,6 +43,7 @@ AsyncSessionFactory = async_sessionmaker(
 # SyncBase = declarative_base()
 # SyncBase.metadata.create_all(bind=engine)
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 class Base(AsyncAttrs, DeclarativeBase):
     metadata = metadata

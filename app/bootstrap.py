@@ -7,7 +7,11 @@ from app.core.logger import set_logging
 from app.middleware import apply_middleware
 from app.routers import apply_routes
 
-from app.core.database import Base, asyncio_engine  # Ensure you import your Base and async engine
+from app.core.database import (
+    Base,
+    asyncio_engine,
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,8 +32,8 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(
         lifespan=lifespan,
-        docs_url='/docs',
-        openapi_url='/docs.json',
+        docs_url="/docs",
+        openapi_url="/docs.json",
     )
 
     app = apply_middleware(app)
