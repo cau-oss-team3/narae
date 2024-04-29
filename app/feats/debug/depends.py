@@ -1,7 +1,7 @@
 from openai import OpenAI
 
-from app import settings
+from app.settings import settings
 
 
 def get_openai_client():
-    return OpenAI(settings.gpt_key)
+    return OpenAI(api_key=settings.gpt_key)

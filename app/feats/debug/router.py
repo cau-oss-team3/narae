@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from openai import OpenAI
 
 from .schemas import GPTRequest, GPTResponse
 from .depends import get_openai_client
+
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
@@ -11,7 +13,7 @@ router = APIRouter(prefix="/debug", tags=["debug"])
     description="Simple demo for testing GPT-3-turbo model",
     response_model=GPTResponse,
 )
-async def gpt_test(request: GPTRequest, client=get_openai_client):
+async def gpt_test(request: GPTRequest, client: OpenAI = Depends(get_openai_client)):
     system_content = f"""
     I've heard that you are a world-renowned coach in the field of backend development coaching.
     I want to improve my expertise in {request.interest} within this field, but I'm having trouble.
@@ -34,7 +36,7 @@ async def gpt_test(request: GPTRequest, client=get_openai_client):
             },
         ],
         temperature=0.5,
-        max_tokens=256,
+        max_tokens=400,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0,
