@@ -45,11 +45,28 @@ Narae를 실행하기 위해서는 다음과 같은 프로그램이 필요합니
 필요한 환경 변수는 다음과 같습니다:
 
 ```dotenv
-DB_USER=db_user_name # e.g. narae
-DB_PASSWORD=db_password # e.g. my_awesome_password
-DB_DATABASE=db_name # e.g. narae
-DB_HOST=db_host # e.g. 127.0.0.1, postgres
-GPT_TOKEN=your_gpt_token # Obtain your GPT token from https://beta.openai.com/account/api-keys
+# Copy this file to app/.env and fill in the values
+## FastAPI settings
+### Required
+CORS_ORIGINS="[\"http://a.com:3000\", \"http://www.b.com\"]"
+ENV=dev # dev, prod, test (default: dev)
+### Optional
+BASE_URL=http://localhost:8000 # Base URL for the API
+TIMEOUT=30 # Timeout for the API
+
+## Database settings
+### Required
+DATABASE__USER=narae # Database user name
+DATABASE__PASSWORD=1234 # Database password
+DATABASE__HOST=postgres # ex) 127.0.0.1
+DATABASE__PORT=5432 # default port for Postgres
+DATABASE__DATABASE=narae # Database name
+### Optional
+DATABASE__PROVIDER=postgresql # default provider for Postgres
+
+## OPEN_AI_API settings (Required)
+## Obtain your GPT API Key from https://beta.openai.com/account/api-keys
+GPT_KEY=your_gpt_key # sk-xxxxxx
 ```
 
 ## 실행 방법
