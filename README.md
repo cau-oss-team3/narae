@@ -62,7 +62,7 @@ DATABASE__HOST=postgres # ex) 127.0.0.1
 DATABASE__PORT=5432 # default port for Postgres
 DATABASE__DATABASE=narae # Database name
 ### Optional
-DATABASE__PROVIDER=postgresql # default provider for Postgres
+DATABASE__PROVIDER=postgresql+psycopg_async # default provider for Postgres
 
 ## OPEN_AI_API settings (Required)
 ## Obtain your GPT API Key  from https://beta.openai.com/account/api-keys
@@ -83,8 +83,12 @@ GPT_KEY=your_gpt_key # sk-xxxxxx
 2. Set up a virtual environment using Python 3.11:
 
    ```sh
+   # Make venv
    python3 -m venv .venv
+   # If you use *nix environment
    source .venv/bin/activate
+   # If you use windows environment
+   .venv\Scripts\activate.bat
    ```
 
 3. Install dependencies:
