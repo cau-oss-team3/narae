@@ -6,7 +6,16 @@ Languages: \[English\] | [\[한국어\]](README.ko.md)
 
 ## Features
 
-(TBD).
+*Narae** is an llm-powered mentoring service designed to enhance user learning in software development fields such as backend and frontend development. Here are the key features:
+
+- **Personalized Learning Paths:** Users set their development goals and receive tailored learning plans based on their individual needs, goals, and circumstances.
+- **AI-Driven Guidance:** AI suggests actions and offers in-depth explanations and exercises on challenging topics.
+- **Progress Tracking and Evaluation:** AI summarizes interactions for progress tracking and generates daily quizzes to reinforce learning.
+- **Advanced Knowledge Mentoring:** Utilizes OpenAI's embedding technologies for deep, specialized knowledge delivery.
+- **Feedback-Driven Improvements:** Continuous collection of user feedback to refine and enhance the service.
+- **Interactive Learning:** Future potential for voice interactions allows users to engage with AI mentors anywhere, anytime, with responses in both voice and text. 
+
+These features combine to create a dynamic and effective learning environment tailored to the needs of modern developers.
 
 ## Prerequisites
 
