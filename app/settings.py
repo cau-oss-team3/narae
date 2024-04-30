@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     timeout: int = 30  # seconds
 
-    # secret_key: str
+    secret_key: str
     cors_origins: List[str]
     database: Database
     gpt_key: str
