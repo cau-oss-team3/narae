@@ -1,5 +1,7 @@
 # Narae
 
+[![Containerize](https://github.com/cau-oss-team3/narae/actions/workflows/docker.yml/badge.svg)](https://github.com/cau-oss-team3/narae/actions/workflows/docker.yml)
+
 Languages: \[English\] | [\[한국어\]](README.ko.md)
 
 ## Features
