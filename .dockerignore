@@ -64,3 +64,6 @@ app/.env
 
 # Secret files
 secrets/
+
+# logs
+*app_logs.json
