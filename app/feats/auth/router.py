@@ -1,5 +1,6 @@
 from fastapi import APIRouter,Depends, HTTPException, Header
 from sqlalchemy.orm import Session
+from app.core.exceptions import AuthenticationFailedException
 from app.settings import settings
 from app.core.database import get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +34,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 #로그인이자 회원가입 // TODO 에러처리해주기
 @router.post("/login")
 async def login(input_user : UserInput, db: AsyncSession = Depends(get_async_session)):
-    
     async with db:
          query = select(User).filter(input_user.email==User.email)
          result = await db.execute(query)
@@ -43,16 +43,11 @@ async def login(input_user : UserInput, db: AsyncSession = Depends(get_async_ses
          new_user = User(email=input_user.email, password = input_user.password)
          async with db:
             db.add(new_user)
-            await db.commit()  
+            await db.commit()
             await db.refresh(new_user)
          found_user = new_user
     elif input_user.password!=found_user.password:
-        return{"err":"비번 다름"}
-        # raise HTTPException( #TODO 이거 401 에러 안나고 500 에러 나면서 자꾸 에러남
-        #     status_code=401,
-        #     detail="틀린 비밀번호",
-        #     headers={"err": "Incorrect username or password"} #"isSuccess": False 빠짐
-        # )
+        raise AuthenticationFailedException(message="Incorrect username or password")
 
     # make access token
     data = {
@@ -68,7 +63,7 @@ async def login(input_user : UserInput, db: AsyncSession = Depends(get_async_ses
 
 #for Check logout
 @router.get(path="/getaccesstoken")
-async def logout():    
+async def logout():
     return login_user[0]
 
 
@@ -79,7 +74,7 @@ async def logout(access_token : str = Header(default=None)):
         if(list(login_user[i].keys())[0]==access_token):
             del login_user[i]
             break
-    
+
     return {"isSuccess": True}
 
 
