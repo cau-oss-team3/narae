@@ -1,4 +1,3 @@
-
 import logging
 import sys
 from fastapi import Request
@@ -15,15 +14,22 @@ class CustomHTTPException(Exception):
         self.headers = headers
         self.err = err
 
+
 class AuthenticationFailedException(CustomHTTPException):
     def __init__(self, status_code: int = 401, message: str = "Authentication failed"):
         super().__init__(status_code=status_code, err=message)
 
 
-async def unhandled_custom_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def unhandled_custom_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
     host = getattr(getattr(request, "client", None), "host", None)
     port = getattr(getattr(request, "client", None), "port", None)
-    url = f"{request.url.path}?{request.query_params}" if request.query_params else request.url.path
+    url = (
+        f"{request.url.path}?{request.query_params}"
+        if request.query_params
+        else request.url.path
+    )
     exception_type, exception_value, exception_traceback = sys.exc_info()
     exception_name = getattr(exception_type, "__name__", None)
     logger.warn(
