@@ -50,6 +50,7 @@ Narae를 실행하기 위해서는 다음과 같은 프로그램이 필요합니
 ### Required
 CORS_ORIGINS="[\"http://a.com:3000\", \"http://www.b.com\"]"
 ENV=dev # dev, prod, test (default: dev)
+SECRET_KEY=supersecretkey # Secret key for FastAPI security
 ### Optional
 BASE_URL=http://localhost:8000 # Base URL for the API
 TIMEOUT=30 # Timeout for the API
