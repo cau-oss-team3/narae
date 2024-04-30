@@ -1,6 +1,7 @@
 name: Docker image build and push
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
     paths: [ "app/**", "requirements.txt", ".dockerignore", "Dockerfile" ]
