@@ -1,5 +1,4 @@
 from pydantic import BaseModel, EmailStr, validator, ValidationError,Field
-from typing import Optional
 from app.core.exceptions import AuthenticationFailedException
 import re
 #요런 느낌으로 베이스모델 모으기
@@ -22,7 +21,7 @@ class UserInput(BaseModel):
         return v
     
     
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    email: str
+# class Token(BaseModel):
+#     access_token: str
+#     token_type: str
+#     email: str

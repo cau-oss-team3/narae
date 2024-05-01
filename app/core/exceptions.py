@@ -19,12 +19,6 @@ class AuthenticationFailedException(CustomHTTPException):
         super().__init__(status_code=status_code, err=message)
 
 
-# #TODO 서버 에러 처리도 필요한데 제대로 작동하는지 확인하기
-# class CustomRequestValidationError(RequestValidationError):
-#     def __init__(self, status_code: int=500, message: str = "validation failed"):
-#         super().__init__(status_code=status_code, err=message)
-
-
 async def unhandled_custom_exception_handler(
     request: Request, exc: Exception
 ) -> JSONResponse:

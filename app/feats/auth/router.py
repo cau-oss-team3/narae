@@ -4,30 +4,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from jose import jwt
 
-from app.core.exceptions import AuthenticationFailedException, CustomRequestValidationError
-
-#from sqlalchemy.orm import Session
-
+from app.core.exceptions import AuthenticationFailedException
 
 from app.settings import settings
 from app.core.database import get_async_session
 
-from .models import User #, PasswordException
-from .schemas import UserInput, Token
+from .models import User 
+from .schemas import UserInput
 
 # uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 
-#{"access_token" : user.id} 으로 dict를 리스트 안에 넣을거임
+#{"access_token" : user.id} 으로 dict를 리스트 안에 넣음
 login_user = []
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-#TODO 그냥 custom error 가 전부... app임 fastapi 내부에서 발생시키는 500 에러는 처리가 불가능(일단 당장 서치는 app에서 처리하는거임)
-
-#로그인이자 회원가입 // TODO 에러처리해주기
+#로그인이자 회원가입
 @router.post("/login")
 async def login(input_user: UserInput, db: AsyncSession = Depends(get_async_session)):
     async with db:
@@ -55,13 +50,7 @@ async def login(input_user: UserInput, db: AsyncSession = Depends(get_async_sess
     return {"isSuccess": True, "token": access_token}
 
 
-# for Check logout
-@router.get(path="/getaccesstoken")
-async def logout():
-    return login_user[0]
-
-
-# TODO 서버오류 에러처리
+# 로그아웃
 @router.post(path="/logout")
 async def logout(access_token: str = Header(default=None)):
     for i in range(len(login_user)):
