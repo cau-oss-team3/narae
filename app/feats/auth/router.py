@@ -1,20 +1,20 @@
-from fastapi import APIRouter,Depends, HTTPException, Header, Request
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from sqlalchemy.orm import Session
+from datetime import timedelta, datetime
+from fastapi import APIRouter, Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from jose import jwt
+
+from app.core.exceptions import AuthenticationFailedException
+
+#from sqlalchemy.orm import Session
+
 from app.settings import settings
 from app.core.database import get_async_session
-from sqlalchemy.ext.asyncio import AsyncSession
-from jose import jwt
-from datetime import timedelta, datetime
-from sqlalchemy import select
-
 
 from .models import User, PasswordException
 from .schemas import UserInput, Token
 
-#uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
@@ -28,53 +28,44 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 #로그인이자 회원가입 // TODO 에러처리해주기
 @router.post("/login")
-async def login(input_user : UserInput, db: AsyncSession = Depends(get_async_session)):
-    
+async def login(input_user: UserInput, db: AsyncSession = Depends(get_async_session)):
     async with db:
-         query = select(User).filter(input_user.email==User.email)
-         result = await db.execute(query)
-         found_user = result.scalar()
+        query = select(User).filter(input_user.email == User.email)
+        result = await db.execute(query)
+        found_user = result.scalar()
 
     if found_user is None:
-         new_user = User(email=input_user.email, password = input_user.password)
-         async with db:
+        new_user = User(email=input_user.email, password=input_user.password)
+        async with db:
             db.add(new_user)
-            await db.commit()  
+            await db.commit()
             await db.refresh(new_user)
-         found_user = new_user
-    elif input_user.password!=found_user.password:
-        raise HTTPException( #TODO 양식 다름
-        status_code=401,
-        detail={"isSuccess" : False, "err": "Incorrect username or password"}
-        )
-     
+        found_user = new_user
+    elif input_user.password != found_user.password:
+        raise AuthenticationFailedException(message="Incorrect username or password")
 
     # make access token
     data = {
         "sub": found_user.email,
-        "exp": datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        "exp": datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
     access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    login_user.append({access_token : found_user.id})
-    return {
-        "isSuccess": True,
-        "token" : access_token
-    }
+    login_user.append({access_token: found_user.id})
+    return {"isSuccess": True, "token": access_token}
 
-#for Check logout
+
+# for Check logout
 @router.get(path="/getaccesstoken")
-async def logout():    
+async def logout():
     return login_user[0]
 
 
-#TODO return 값 바꾸기
+# TODO return 값 바꾸기
 @router.post(path="/logout")
-async def logout(access_token : str = Header(default=None)):
+async def logout(access_token: str = Header(default=None)):
     for i in range(len(login_user)):
-        if(list(login_user[i].keys())[0]==access_token):
+        if list(login_user[i].keys())[0] == access_token:
             del login_user[i]
             break
-    
+
     return {"isSuccess": True}
-
-
