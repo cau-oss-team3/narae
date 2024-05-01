@@ -1,4 +1,7 @@
-from fastapi import APIRouter,Depends, HTTPException, Header
+from fastapi import APIRouter,Depends, HTTPException, Header, Request
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy.orm import Session
 from app.settings import settings
 from app.core.database import get_async_session
@@ -8,7 +11,7 @@ from datetime import timedelta, datetime
 from sqlalchemy import select
 
 
-from .models import User
+from .models import User, PasswordException
 from .schemas import UserInput, Token
 
 #uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -16,19 +19,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 
-#TODO 이메일-토큰 table 생성하기
-
-login_user = [] #{"access_token" : user.id} 으로 dict를 리스트 안에 넣을거임
+#{"access_token" : user.id} 으로 dict를 리스트 안에 넣을거임
+login_user = []
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# #모든 user 보여주기
-# @router.get("/users")
-# async def read_users(db: AsyncSession = Depends(get_async_session)):
-#     all_user = db.query(User).order_by(User.email).all()
-#     return {"all_user":all_user}
-
-
+#TODO 그냥 custom error 가 전부... app임 fastapi 내부에서 발생시키는 500 에러는 처리가 불가능(일단 당장 서치는 app에서 처리하는거임)
 
 #로그인이자 회원가입 // TODO 에러처리해주기
 @router.post("/login")
@@ -47,12 +43,11 @@ async def login(input_user : UserInput, db: AsyncSession = Depends(get_async_ses
             await db.refresh(new_user)
          found_user = new_user
     elif input_user.password!=found_user.password:
-        return{"err":"비번 다름"}
-        # raise HTTPException( #TODO 이거 401 에러 안나고 500 에러 나면서 자꾸 에러남
-        #     status_code=401,
-        #     detail="틀린 비밀번호",
-        #     headers={"err": "Incorrect username or password"} #"isSuccess": False 빠짐
-        # )
+        raise HTTPException( #TODO 양식 다름
+        status_code=401,
+        detail={"isSuccess" : False, "err": "Incorrect username or password"}
+        )
+     
 
     # make access token
     data = {
