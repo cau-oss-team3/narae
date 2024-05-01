@@ -2,8 +2,7 @@ import logging
 import sys
 from fastapi import Request
 from fastapi.responses import JSONResponse
-
-
+from fastapi.exceptions import RequestValidationError
 logger = logging.getLogger("fastapi")
 
 
@@ -18,6 +17,12 @@ class CustomHTTPException(Exception):
 class AuthenticationFailedException(CustomHTTPException):
     def __init__(self, status_code: int = 401, message: str = "Authentication failed"):
         super().__init__(status_code=status_code, err=message)
+
+
+# #TODO 서버 에러 처리도 필요한데 제대로 작동하는지 확인하기
+# class CustomRequestValidationError(RequestValidationError):
+#     def __init__(self, status_code: int=500, message: str = "validation failed"):
+#         super().__init__(status_code=status_code, err=message)
 
 
 async def unhandled_custom_exception_handler(

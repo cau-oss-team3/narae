@@ -1,21 +1,28 @@
-from pydantic import BaseModel, EmailStr, validator
-from fastapi import  HTTPException
+from pydantic import BaseModel, EmailStr, validator, ValidationError,Field
 from typing import Optional
-
-
+from app.core.exceptions import AuthenticationFailedException
+import re
 #요런 느낌으로 베이스모델 모으기
 class UserInput(BaseModel):
-    email: EmailStr
+    email: str
     password : str
 
-#양식 검사, 이메일 양식 검사
+    @validator('email')
+    def validate_email(cls, v):
+        # v에는 해당 이메일 필드에 대한 값이 담겨 있습니다.
+        if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
+            return v
+        else:
+            raise AuthenticationFailedException(status_code=401, message="입력 양식을 지켜주세요")
+#비어있는지 검사
     @validator('email', 'password')
     def check_empty(cls, v):
         if not v or v.isspace():
-            raise HTTPException(status_code=422, detail="필수 항목을 입력해주세요.")
+            raise AuthenticationFailedException(status_code=401, message="입력 양식을 지켜주세요")
         return v
+    
     
 class Token(BaseModel):
     access_token: str
     token_type: str
-    email: EmailStr
+    email: str

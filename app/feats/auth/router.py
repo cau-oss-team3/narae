@@ -4,14 +4,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from jose import jwt
 
-from app.core.exceptions import AuthenticationFailedException
+from app.core.exceptions import AuthenticationFailedException, CustomRequestValidationError
 
 #from sqlalchemy.orm import Session
+
 
 from app.settings import settings
 from app.core.database import get_async_session
 
-from .models import User, PasswordException
+from .models import User #, PasswordException
 from .schemas import UserInput, Token
 
 # uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -60,7 +61,7 @@ async def logout():
     return login_user[0]
 
 
-# TODO return 값 바꾸기
+# TODO 서버오류 에러처리
 @router.post(path="/logout")
 async def logout(access_token: str = Header(default=None)):
     for i in range(len(login_user)):

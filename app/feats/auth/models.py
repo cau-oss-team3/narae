@@ -8,6 +8,3 @@ class User(Base):
     email = Column(String(120), unique=True, index=True, nullable = False) 
     password = Column(String(100), nullable=False)
 
-class PasswordException(Exception):
-    def __init__(self, name: str):
-        self.name = name
