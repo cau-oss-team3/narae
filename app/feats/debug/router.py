@@ -24,7 +24,7 @@ async def gpt_test(request: GPTRequest, client: OpenAI = Depends(get_openai_clie
     Additionally, please use the following details to ask me questions to enhance my API design skills and provide expert feedback on my responses. If my responses are lacking, kindly suggest areas for improvement, necessary understandings, and request further explanation.
     """
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-3.5-turbo-1106",
         messages=[
             {
                 "role": "system",
