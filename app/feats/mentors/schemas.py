@@ -2,6 +2,7 @@ from pydantic import BaseModel, validator
 from sqlalchemy import String, Integer
 
 
+# TODO 최소 100 최대 256 설정
 class STICC(BaseModel):
     situation: str
     task: str
