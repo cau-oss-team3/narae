@@ -9,20 +9,20 @@ from app.core.exceptions import AuthenticationFailedException
 from app.settings import settings
 from app.core.database import get_async_session
 
-from .models import User 
+from .models import User
 from .schemas import UserInput
 
-# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 
-#{"access_token" : user.id} 으로 dict를 리스트 안에 넣음
+# {"access_token" : user.id} 으로 dict를 리스트 안에 넣음
 login_user = []
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-#로그인이자 회원가입
+
+# 로그인이자 회원가입
 @router.post("/login")
 async def login(input_user: UserInput, db: AsyncSession = Depends(get_async_session)):
     async with db:
