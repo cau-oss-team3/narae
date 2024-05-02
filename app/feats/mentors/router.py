@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 
 from app.core.exceptions import AuthenticationFailedException
 from app.settings import settings
@@ -173,3 +173,27 @@ async def updateMentor(
         await db.commit()
 
     return {"isSuccess": True, "id": id}
+
+
+@router.delete("{id}")
+async def deleteMentor(
+    id: str,
+    access_token: str = Header(default=None),
+    db: AsyncSession = Depends(get_async_session),
+):
+    async with db:
+        query = select(Mentor).filter(id == Mentor.id)
+        result = await db.execute(query)
+        mentor_to_delete = result.scalar()
+
+    if mentor_to_delete is None:
+        raise AuthenticationFailedException(
+            status_code=404, message="해당 멘토 id를 찾을 수 없거나 존재하지 않음"
+        )
+
+    async with db:
+        query = delete(Mentor).where(Mentor.id == id)
+        await db.execute(query)
+        await db.commit()
+
+    return {"isSuccess": True}
