@@ -16,3 +16,5 @@ router = APIRouter(prefix="/mentors", tags=["mentors"]) #TODO router 추가하�
 
 @router.post("")
 async createMentor(input_mentor_detail : Mentor_detail, )
+
+@router.get("")
