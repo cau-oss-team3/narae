@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, validator, ValidationError, Field
+from pydantic import BaseModel, validator
 from app.core.exceptions import AuthenticationFailedException
 import re
 
