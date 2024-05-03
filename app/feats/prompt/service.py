@@ -144,6 +144,7 @@ def get_recommended_action(
     recommend_action: format_recommend_action,
     existing_learning,
     learning_goal,
+    abandon_reason,
     client: OpenAI = Depends(get_openai_client),
 ):
     prompt = f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease recommend an action that can be done according to today's learning direction."
@@ -197,6 +198,12 @@ def get_recommended_action(
 
         reason_response = client.Completion.create(
             model="gpt-3.5-turbo-1106",
+            messages=[
+                {
+                    "role": "user",
+                    "content": abandon_reason,
+                }
+            ],
             prompt=reason_prompt,
             temperature=0.75,
             max_tokens=150,

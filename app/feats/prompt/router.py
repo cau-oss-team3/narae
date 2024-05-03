@@ -38,10 +38,10 @@ service = MyService()
 
 
 @router.post(
-    "/gpt-test/",
-    description="Simple demo for testing GPT-3.5-turbo model",
+    "/gpt-narae/",
+    description="Narae service by using GPT-3.5-turbo model",
     response_model=GPTResponse,
 )
-async def gpt_test(request: GPTRequest, client: OpenAI = Depends(get_openai_client)):
+async def gpt_narae(request: GPTRequest, client: OpenAI = Depends(get_openai_client)):
     response = service.get_coaching_info_from_gpt(client, request.sticc)
     return GPTResponse(response)
