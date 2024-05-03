@@ -53,9 +53,14 @@ async def login(input_user: UserInput, db: AsyncSession = Depends(get_async_sess
 # 로그아웃
 @router.post(path="/logout")
 async def logout(access_token: str = Header(default=None)):
+    count = False
     for i in range(len(login_user)):
         if list(login_user[i].keys())[0] == access_token:
             del login_user[i]
+            count = True
             break
 
-    return {"isSuccess": True}
+    if count:
+        return {"isSuccess": True}
+    else:
+        raise AuthenticationFailedException(status_code=412, message="unavailable user")
