@@ -6,4 +6,6 @@ class UserSituationRequest(BaseModel):
     task: str = "To solve this problem, we have to do xxx."
     intent: str = "The reason for this is xxx."
     concerns: str = "But there is something that we must aware and be cautious."
-    calibration: str = "Let's talk about things that we do not understand, or difficult, or we do not know, or should calibrate."
+    calibration: str = (
+        "Let's talk about things that we do not understand, or difficult, or we do not know, or should calibrate."
+    )

@@ -3,6 +3,7 @@
 어떤 파라미터를 받고 어떻게 요청하는지에 대한 코드
 서비스를 호출하고 GPT 리소스를 제공하는 코드
 """
+
 """
 Action: 오늘 당장 실행할 수 있는 Task
 커리큘럼: 사용자의 장기적인 학습 행동 방침 - 장기간의 거대한 목표, 체계적인 지식 습득 위함, 향후 참조할 대량의 자료, 마일스톤
@@ -35,7 +36,12 @@ router = APIRouter(prefix="/prompt", tags=["prompt"])
 
 service = MyService()
 
-@router.post("/gpt-test/", description="Simple demo for testing GPT-3.5-turbo model", response_model=GPTResponse)
+
+@router.post(
+    "/gpt-test/",
+    description="Simple demo for testing GPT-3.5-turbo model",
+    response_model=GPTResponse,
+)
 async def gpt_test(request: GPTRequest, client: OpenAI = Depends(get_openai_client)):
     response = service.get_coaching_info_from_gpt(client, request.sticc)
     return GPTResponse(response)
