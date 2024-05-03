@@ -3,14 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 
 from app.core.exceptions import AuthenticationFailedException
-from app.settings import settings
 from app.core.database import get_async_session
 from app.feats.auth.router import login_user
 
 from .models import Mentor
-from .schemas import STICC, Mentor_Detail
-
-# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+from .schemas import Mentor_Detail
 
 router = APIRouter(prefix="/mentors", tags=["mentors"])
 
@@ -29,10 +26,19 @@ async def createMentor(
     access_token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
-    # TODO 3개 넘어가면 못만들게 막기 (423에러)
-    # TODO creater_id none 값이면 처리..? 근데 없을수가 있나?
+
     creater_id = get_user(access_token)
-    print(type(creater_id))
+
+    async with db:
+        query = select(Mentor).filter(creater_id == Mentor.user_id)
+        result = await db.execute(query)
+        found_mentor = result.scalars().all()
+
+    if len(found_mentor) >= 3:
+        raise AuthenticationFailedException(
+            status_code=423, message="You already have 3 mentors"
+        )
+
     mentor_id = str(creater_id) + input_mentor_detail.mentor_name
 
     new_mentor = Mentor(
@@ -46,6 +52,7 @@ async def createMentor(
         concern=input_mentor_detail.mentor_sticc.concern,
         calibrate=input_mentor_detail.mentor_sticc.calibrate,
     )
+
     async with db:
         db.add(new_mentor)
         await db.commit()
