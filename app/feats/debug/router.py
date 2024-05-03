@@ -1,45 +1,60 @@
 from fastapi import APIRouter, Depends
-from openai import OpenAI
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
-from .schemas import GPTRequest, GPTResponse
-from .depends import get_openai_client
-
+from app.core.exceptions import AuthenticationFailedException
+from app.core.database import get_async_session
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
 
-@router.post(
-    "/gpt-test/",
-    description="Simple demo for testing GPT-3-turbo model",
-    response_model=GPTResponse,
-)
-async def gpt_test(request: GPTRequest, client: OpenAI = Depends(get_openai_client)):
-    system_content = f"""
-    I've heard that you are a world-renowned coach in the field of backend development coaching.
-    I want to improve my expertise in {request.interest} within this field, but I'm having trouble.
-    Here are the details of what I've tried so far and what hasn't worked: {request.session_details}
+# daily-action list 가져오기
+@router.get("/daily-actions")
+async def getDailyActionList():
+    # TODO daily action 리스트 받아오기
+    daily_action_list = [
+        {"id": "string", "daily-action": "string"},
+        {"id": "string", "daily-action": "string"},
+    ]
 
-    Based on this information, could you assess my current progress, identify obstacles, and suggest next action items?
-    If necessary, please provide motivational feedback.
-    Additionally, please use the following details to ask me questions to enhance my API design skills and provide expert feedback on my responses. If my responses are lacking, kindly suggest areas for improvement, necessary understandings, and request further explanation.
-    """
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": system_content,
-            },
-            {
-                "role": "user",
-                "content": "Given the details I've provided, could you assess my current progress, identify obstacles, and suggest next action items?",
-            },
-        ],
-        temperature=0.5,
-        max_tokens=400,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-    )
+    return {"isSuccess": True, "daily-actions": daily_action_list}
 
-    return GPTResponse(response=response.choices[0].message.content)
+
+# daily0action 가져오기
+@router.get("/daily-actions/{id}")
+async def getDailyActionList(id: str, db: AsyncSession = Depends(get_async_session)):
+
+    # # TODO 해당 멘토의 daily action 받아오기(Table name 넣기)
+    # async with db:
+    #     query = select(Table_name).filter(id == Table_name.mentor_name)
+    #     result = await db.execute(query)
+    #     daily_action = result.scalar()
+
+    # # 해당 멘토의 daily_action이 존재하지 않을 때 예외처리
+    # if daily_action is None:
+    #     raise AuthenticationFailedException(
+    #         status_code=404, message="해당 멘토 id를 찾을 수 없거나 존재하지 않음"
+    #     )
+
+    # TODO daily acton 값 넣기
+    return {"isSuccess": True, "daily-action": "daily action text"}
+
+
+# chat-history 가져오기
+@router.get("/chat-history/{id}")
+async def getChatHistory(id: str, db: AsyncSession = Depends(get_async_session)):
+
+    # # TODO 해당 id의 기존 대화 요약 가져오기 (TableName이랑 col 명 바꾸기)
+    # async with db:
+    #     query = select(TableName).filter(id == TableName.mentor_id)
+    #     result = await db.execute(query)
+    #     chat_history = result.scalar()
+
+    # # 해당 멘토의 chat_history가 존재하지 않을 때 예외처리
+    # if chat_history is None:
+    #     raise AuthenticationFailedException(
+    #         status_code=404, message="해당 멘토 id를 찾을 수 없거나 존재하지 않음"
+    #     )
+
+    # TODO return 값 변경하기(양식만 가져옴)
+    return {"isSuccess": True, "id": id, "summary": "string"}
