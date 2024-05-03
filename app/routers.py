@@ -5,6 +5,7 @@ from app.feats.debug.router import router as debug_router
 from app.feats.healthcheck.router import router as healthcheck_router
 from app.feats.item.router import router as item_router
 from app.feats.mentors.router import router as mentors_router
+from app.feats.action.router import router as action_router
 
 
 def apply_routes(app: FastAPI) -> FastAPI:
@@ -17,5 +18,6 @@ def apply_routes(app: FastAPI) -> FastAPI:
     app.include_router(item_router)  # NOTE: For demonstration
     app.include_router(debug_router)  # NOTE: For simple gpt api testing
     app.include_router(mentors_router)
+    app.include_router(action_router)
 
     return app
