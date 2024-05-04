@@ -8,20 +8,20 @@ from app.core.database import get_async_session
 router = APIRouter(prefix="/debug", tags=["debug"])
 
 
-# daily-action list 가져오기
-@router.get("/daily-actions")
+# daily_action list 가져오기
+@router.get("/daily_actions")
 async def getDailyActionList():
     # TODO daily action 리스트 받아오기
     daily_action_list = [
-        {"id": "string", "daily-action": "string"},
-        {"id": "string", "daily-action": "string"},
+        {"id": "string", "daily_action": "string"},
+        {"id": "string", "daily_action": "string"},
     ]
 
-    return {"isSuccess": True, "daily-actions": daily_action_list}
+    return {"isSuccess": True, "daily_actions": daily_action_list}
 
 
-# daily0action 가져오기
-@router.get("/daily-actions/{id}")
+# daily_action 가져오기
+@router.get("/daily_actions/{id}")
 async def getDailyActionList(id: str, db: AsyncSession = Depends(get_async_session)):
 
     # # TODO 해당 멘토의 daily action 받아오기(Table name 넣기)
@@ -37,11 +37,11 @@ async def getDailyActionList(id: str, db: AsyncSession = Depends(get_async_sessi
     #     )
 
     # TODO daily acton 값 넣기
-    return {"isSuccess": True, "daily-action": "daily action text"}
+    return {"isSuccess": True, "daily_action": "daily action text"}
 
 
-# chat-history 가져오기
-@router.get("/chat-history/{id}")
+# chat_history 가져오기
+@router.get("/chat_history/{id}")
 async def getChatHistory(id: str, db: AsyncSession = Depends(get_async_session)):
 
     # # TODO 해당 id의 기존 대화 요약 가져오기 (TableName이랑 col 명 바꾸기)
@@ -57,4 +57,4 @@ async def getChatHistory(id: str, db: AsyncSession = Depends(get_async_session))
     #     )
 
     # TODO return 값 변경하기(양식만 가져옴)
-    return {"isSuccess": True, "id": id, "summary": "string"}
+    return {"isSuccess": True, "id": id, "summary": "summary context"}
