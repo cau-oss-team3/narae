@@ -12,22 +12,22 @@ from .schemas import Mentor_Detail
 router = APIRouter(prefix="/mentors", tags=["mentors"])
 
 
-# access token으로 user_id 얻기
-def get_user(access_token: str):
+# Authorization으로 user_id 얻기
+def get_user(Authorization: str):
     for i in range(len(login_user)):
-        if list(login_user[i].keys())[0] == access_token:
-            return login_user[i].get(access_token)
+        if list(login_user[i].keys())[0] == Authorization:
+            return login_user[i].get(Authorization)
 
 
 # 멘토 생성
 @router.post("")
 async def createMentor(
     input_mentor_detail: Mentor_Detail,
-    access_token: str = Header(default=None),
+    Authorization: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
 
-    creater_id = get_user(access_token)
+    creater_id = get_user(Authorization)
 
     async with db:
         query = select(Mentor).filter(creater_id == Mentor.user_id)
@@ -36,7 +36,7 @@ async def createMentor(
 
     if len(found_mentor) >= 3:
         raise AuthenticationFailedException(
-            status_code=423, message="You already have 3 mentors"
+            status_code=423, message="멘토 최대 생성 제한 도달"
         )
 
     mentor_id = str(creater_id) + input_mentor_detail.mentor_name
@@ -64,10 +64,10 @@ async def createMentor(
 # 멘토 리스트 얻기 - getMentorList
 @router.get("")
 async def getMentorList(
-    access_token: str = Header(default=None),
+    Authorization: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
-    creater_id = get_user(access_token)
+    creater_id = get_user(Authorization)
     async with db:
         query = select(Mentor).filter(creater_id == Mentor.user_id)
         result = await db.execute(query)
@@ -81,7 +81,7 @@ async def getMentorList(
             {
                 "id": found_mentor[i].id,
                 "name": found_mentor[i].mentor_name,
-                "daily-action": "string",
+                "daily-action": "today's daily action",
             }
         )
 
@@ -92,7 +92,7 @@ async def getMentorList(
 @router.get("{id}")
 async def getMentor(
     id: str,
-    access_token: str = Header(default=None),
+    Authorization: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
@@ -102,7 +102,7 @@ async def getMentor(
 
     if found_mentor is None:
         raise AuthenticationFailedException(
-            status_code=404, message="해당 멘토 id를 찾을 수 없거나 존재하지 않음"
+            status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음""
         )
 
     # Mentor_Detail 객체로 만들어주기
@@ -125,7 +125,7 @@ async def getMentor(
         "isSuccess": True,
         "id": id,
         "mentor-detail": found_mentor_detail,
-        "chat-history": "chat-data array",
+        "chat-history": "chat-data array가 들어가는 부분",
     }
 
 
@@ -133,7 +133,7 @@ async def getMentor(
 async def updateMentor(
     id: str,
     input_mentor_detail: Mentor_Detail,
-    access_token: str = Header(default=None),
+    Authorization: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
@@ -143,7 +143,7 @@ async def updateMentor(
 
     if found_mentor is None:
         raise AuthenticationFailedException(
-            status_code=404, message="해당 멘토 id를 찾을 수 없거나 존재하지 않음"
+            status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음""
         )
 
     # input이 비어있지 않으면 db 내용을 바꿔줌
@@ -185,7 +185,7 @@ async def updateMentor(
 @router.delete("{id}")
 async def deleteMentor(
     id: str,
-    access_token: str = Header(default=None),
+    Authorization: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
@@ -195,7 +195,7 @@ async def deleteMentor(
 
     if mentor_to_delete is None:
         raise AuthenticationFailedException(
-            status_code=404, message="해당 멘토 id를 찾을 수 없거나 존재하지 않음"
+            status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음"
         )
 
     async with db:

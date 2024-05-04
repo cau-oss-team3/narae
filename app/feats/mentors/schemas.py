@@ -14,7 +14,7 @@ class STICC(BaseModel):
     def validate_situation_length(cls, v):
         if len(v) < 100 or len(v) > 256:
             raise AuthenticationFailedException(
-                status_code=413, message="입력 양식을 지켜주세요"
+                status_code=413, message="토큰 length가 너무 큼"
             )
         return v
 
@@ -22,7 +22,7 @@ class STICC(BaseModel):
     def validate_task_length(cls, v):
         if len(v) < 100 or len(v) > 256:
             raise AuthenticationFailedException(
-                status_code=413, message="입력 양식을 지켜주세요"
+                status_code=413, message="토큰 length가 너무 큼"
             )
         return v
 
@@ -30,7 +30,7 @@ class STICC(BaseModel):
     def validate_intent_length(cls, v):
         if len(v) < 100 or len(v) > 256:
             raise AuthenticationFailedException(
-                status_code=413, message="입력 양식을 지켜주세요"
+                status_code=413, message="토큰 length가 너무 큼"
             )
         return v
 
@@ -38,7 +38,7 @@ class STICC(BaseModel):
     def validate_concern_length(cls, v):
         if len(v) < 100 or len(v) > 256:
             raise AuthenticationFailedException(
-                status_code=413, message="입력 양식을 지켜주세요"
+                status_code=413, message="토큰 length가 너무 큼"
             )
         return v
 
@@ -46,7 +46,7 @@ class STICC(BaseModel):
     def validate_calibrate_length(cls, v):
         if len(v) < 100 or len(v) > 256:
             raise AuthenticationFailedException(
-                status_code=413, message="입력 양식을 지켜주세요"
+                status_code=413, message="토큰 length가 너무 큼"
             )
         return v
 
@@ -60,6 +60,6 @@ class Mentor_Detail(BaseModel):
     def validate_calibrate_length(cls, v):
         if len(v) < 1 or len(v) > 100:
             raise AuthenticationFailedException(
-                status_code=413, message="입력 양식을 지켜주세요"
+                status_code=413, message="토큰 length가 너무 큼"
             )
         return v
