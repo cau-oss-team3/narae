@@ -21,7 +21,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           audience: sts.amazonaws.com
-          aws-region: ap-northeast-2
+          aws-region: us-east-1
           role-to-assume: arn:aws:iam::637423298185:role/github-actions-for-ecr-push
       - name: Login to Amazon Public ECR
         id: login-ecr
@@ -54,8 +54,6 @@ jobs:
         registry: public.ecr.aws
         username: ${{ needs.login-to-amazon-ecr.outputs.docker_username }}
         password: ${{ needs.login-to-amazon-ecr.outputs.docker_password }}
-      env:
-        AWS_REGION: "ap-northeast-2"
     - name: Get timestamp
       id: timestamp
       run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
