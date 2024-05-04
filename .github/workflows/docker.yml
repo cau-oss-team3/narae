@@ -45,6 +45,6 @@ jobs:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: codinggroot/narae:${{ env.TIMESTAMP }},codinggroot/narae:latest,${{ secrets.NARAE_ECR_TAG }}/narae:latest
+        tags: codinggroot/narae:${{ env.TIMESTAMP }},codinggroot/narae:latest,${{ secrets.NARAE_ECR_TAG }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
