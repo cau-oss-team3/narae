@@ -164,3 +164,7 @@ secrets/
 
 # logs
 *app_logs.json
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
