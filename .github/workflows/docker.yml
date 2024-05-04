@@ -33,15 +33,9 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Get ECR Secrets
+    - name: Login AWS Public ECR
       id: ecr
-      run: echo "ECR_PASSWORD=$(aws ecr-public get-login-password --region us-east-1)" >> $GITHUB_ENV
-    - name: Login to AWS Public ECR
-      uses: docker/login-action@v3
-      with:
-        registry: public.ecr.aws
-        username: "AWS"
-        password: ${{ env.ECR_PASSWORD }}
+      run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/u5h7r6e3
     - name: Get timestamp
       id: timestamp
       run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
