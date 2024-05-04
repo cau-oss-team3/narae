@@ -13,7 +13,7 @@ class UserInput(BaseModel):
             return v
         else:
             raise AuthenticationFailedException(
-                status_code=401, message="입력 양식을 지켜주세요"
+                status_code=401, message="입력 양식이 맞지 않음"
             )
 
     # 비어있는지 검사
@@ -21,6 +21,6 @@ class UserInput(BaseModel):
     def check_empty(cls, v):
         if not v or v.isspace():
             raise AuthenticationFailedException(
-                status_code=401, message="입력 양식을 지켜주세요"
+                status_code=401, message="입력 양식이 맞지 않음"
             )
         return v

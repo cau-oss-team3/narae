@@ -16,7 +16,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 
-# {"access_token" : user.id} 으로 dict를 리스트 안에 넣음
+# {"Authorization" : user.id} 으로 dict를 리스트 안에 넣음
 login_user = []
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -38,24 +38,26 @@ async def login(input_user: UserInput, db: AsyncSession = Depends(get_async_sess
             await db.refresh(new_user)
         found_user = new_user
     elif input_user.password != found_user.password:
-        raise AuthenticationFailedException(message="Incorrect username or password")
+        raise AuthenticationFailedException(
+            status_code=401, message="틀린 비밀번호 혹은 입력 양식이 맞지 않음"
+        )
 
-    # make access token
+    # make access token(Authorization)
     data = {
         "sub": found_user.email,
         "exp": datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
-    access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    login_user.append({access_token: found_user.id})
-    return {"isSuccess": True, "token": access_token}
+    Authorization = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+    login_user.append({Authorization: found_user.id})
+    return {"isSuccess": True, "token": Authorization}
 
 
 # 로그아웃
 @router.post(path="/logout")
-async def logout(access_token: str = Header(default=None)):
+async def logout(Authorization: str = Header(default=None)):
     count = False
     for i in range(len(login_user)):
-        if list(login_user[i].keys())[0] == access_token:
+        if list(login_user[i].keys())[0] == Authorization:
             del login_user[i]
             count = True
             break
@@ -63,4 +65,6 @@ async def logout(access_token: str = Header(default=None)):
     if count:
         return {"isSuccess": True}
     else:
-        raise AuthenticationFailedException(status_code=412, message="unavailable user")
+        raise AuthenticationFailedException(
+            status_code=412, message="존재하지 않는 토큰"
+        )
