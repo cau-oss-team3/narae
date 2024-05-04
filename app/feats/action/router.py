@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header
 from typing import Optional
 
-from .schemas import Chat_Data
+from .schemas import Response_Chat_Data
 
 
 router = APIRouter(prefix="/action", tags=["action"])
@@ -10,8 +10,8 @@ router = APIRouter(prefix="/action", tags=["action"])
 @router.get("/recommend/{id}")
 async def recommendAction(id: str, Authorization: str = Header(default=None)):
 
-    # TODO chat data 받아오기
-    dummy_chat_data = Chat_Data()
+    # TODO chat data 받아오기 (아래는 택완님이 부탁하신 더미데이터)
+    dummy_chat_data = Response_Chat_Data()
     dummy_chat_data.seq = 0
     dummy_chat_data.type = 1
     dummy_chat_data.chat_data = "chat data"
@@ -37,7 +37,7 @@ async def acceptAction(
 ):
 
     # TODO API 설계 참고해서 기능 구현하기
-    dummy_chat_data = Chat_Data()
+    dummy_chat_data = Response_Chat_Data()
     dummy_chat_data.seq = 0
     dummy_chat_data.type = 1
     dummy_chat_data.chat_data = "chat data"
@@ -56,7 +56,7 @@ async def postActionResult(
 ):
 
     # TODO API 설계 참고해서 기능 구현하기
-    dummy_chat_data = Chat_Data()
+    dummy_chat_data = Response_Chat_Data()
     dummy_chat_data.seq = 0
     dummy_chat_data.type = 1
     dummy_chat_data.chat_data = "chat data"
