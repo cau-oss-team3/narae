@@ -81,7 +81,7 @@ async def getMentorList(
             {
                 "id": found_mentor[i].id,
                 "name": found_mentor[i].mentor_name,
-                "daily-action": "today's daily action",
+                "daily_action": "today's daily action",
             }
         )
 
@@ -102,7 +102,7 @@ async def getMentor(
 
     if found_mentor is None:
         raise AuthenticationFailedException(
-            status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음""
+            status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음"
         )
 
     # Mentor_Detail 객체로 만들어주기
@@ -124,8 +124,8 @@ async def getMentor(
     return {
         "isSuccess": True,
         "id": id,
-        "mentor-detail": found_mentor_detail,
-        "chat-history": "chat-data array가 들어가는 부분",
+        "mentor_detail": found_mentor_detail,
+        "chat_history": "chat-data array가 들어가는 부분",
     }
 
 
@@ -143,7 +143,7 @@ async def updateMentor(
 
     if found_mentor is None:
         raise AuthenticationFailedException(
-            status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음""
+            status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음"
         )
 
     # input이 비어있지 않으면 db 내용을 바꿔줌
