@@ -13,8 +13,8 @@ def index():
 
 
 @app.get("/front")
-def index():
-    return RedirectResponse(url="https://cau-oss-team3.github.io/narae-frontend/")
+def to_ui():
+    return RedirectResponse(url="https://app.my-narae.link/")
 
 
 if __name__ == "__main__":

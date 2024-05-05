@@ -1,6 +1,5 @@
 from typing import Annotated
 from fastapi import Cookie, Query, WebSocket, WebSocketException, status
-from fastapi.responses import HTMLResponse
 
 
 async def get_cookie_or_token(
