@@ -15,7 +15,6 @@ router = APIRouter(prefix="/mentors", tags=["mentors"])
 # token으로 user_id 얻기
 def get_user(token):
     for i in range(len(login_user)):
-        print(list(login_user[i].keys())[0], type(list(login_user[i].keys())[0]))
         if list(login_user[i].keys())[0] == token:
             return login_user[i].get(token)
 
