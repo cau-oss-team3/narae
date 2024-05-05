@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.core.exceptions import CustomHTTPException, unhandled_custom_exception_handler
 from app.settings import settings
 from app.core.logger import set_logging
 from app.middleware import apply_middleware
@@ -36,8 +37,8 @@ def create_app() -> FastAPI:
         openapi_url="/docs.json",
     )
 
+    app.add_exception_handler(CustomHTTPException, unhandled_custom_exception_handler)
     app = apply_middleware(app)
     app = apply_routes(app)
-    # use_route_names_as_operation_ids(app)
 
     return app
