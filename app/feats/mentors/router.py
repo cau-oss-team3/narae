@@ -12,22 +12,21 @@ from .schemas import Mentor_Detail
 router = APIRouter(prefix="/mentors", tags=["mentors"])
 
 
-# Authorization으로 user_id 얻기
-def get_user(Authorization: str):
+# token으로 user_id 얻기
+def get_user(token):
     for i in range(len(login_user)):
-        if list(login_user[i].keys())[0] == Authorization:
-            return login_user[i].get(Authorization)
+        if list(login_user[i].keys())[0] == token:
+            return login_user[i].get(token)
 
 
 # 멘토 생성
 @router.post("")
 async def createMentor(
     input_mentor_detail: Mentor_Detail,
-    Authorization: str = Header(default=None),
+    token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
-
-    creater_id = get_user(Authorization)
+    creater_id = get_user(token)
 
     async with db:
         query = select(Mentor).filter(creater_id == Mentor.user_id)
@@ -64,10 +63,10 @@ async def createMentor(
 # 멘토 리스트 얻기 - getMentorList
 @router.get("")
 async def getMentorList(
-    Authorization: str = Header(default=None),
+    token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
-    creater_id = get_user(Authorization)
+    creater_id = get_user(token)
     async with db:
         query = select(Mentor).filter(creater_id == Mentor.user_id)
         result = await db.execute(query)
@@ -89,10 +88,10 @@ async def getMentorList(
 
 
 # 멘토 얻기 - getMentor
-@router.get("{id}")
+@router.get("/{id}")
 async def getMentor(
     id: str,
-    Authorization: str = Header(default=None),
+    token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
@@ -129,11 +128,11 @@ async def getMentor(
     }
 
 
-@router.put("{id}")
+@router.put("/{id}")
 async def updateMentor(
     id: str,
     input_mentor_detail: Mentor_Detail,
-    Authorization: str = Header(default=None),
+    token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
@@ -182,10 +181,10 @@ async def updateMentor(
     return {"isSuccess": True, "id": id}
 
 
-@router.delete("{id}")
+@router.delete("/{id}")
 async def deleteMentor(
     id: str,
-    Authorization: str = Header(default=None),
+    token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:

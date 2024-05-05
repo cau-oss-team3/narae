@@ -16,7 +16,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 
-# {"Authorization" : user.id} 으로 dict를 리스트 안에 넣음
+# {"token" : user.id} 으로 dict를 리스트 안에 넣음
 login_user = []
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -47,17 +47,18 @@ async def login(input_user: UserInput, db: AsyncSession = Depends(get_async_sess
         "sub": found_user.email,
         "exp": datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
-    Authorization = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    login_user.append({Authorization: found_user.id})
-    return {"isSuccess": True, "token": Authorization}
+    token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+    login_user.append({token: found_user.id})
+    return {"isSuccess": True, "token": token}
 
 
 # 로그아웃
 @router.post(path="/logout")
-async def logout(Authorization: str = Header(default=None)):
+async def logout(token: str = Header(default=None, convert_underscores=False)):
     count = False
+    print(token, type(token))
     for i in range(len(login_user)):
-        if list(login_user[i].keys())[0] == Authorization:
+        if list(login_user[i].keys())[0] == token:
             del login_user[i]
             count = True
             break
