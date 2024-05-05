@@ -7,9 +7,14 @@ from .bootstrap import create_app
 app = create_app()
 
 
-# @app.get("/")
-# def index():
-#     return RedirectResponse(url="/docs")
+@app.get("/")
+def index():
+    return RedirectResponse(url="/docs")
+
+
+@app.get("/front")
+def index():
+    return RedirectResponse(url="https://cau-oss-team3.github.io/narae-frontend/")
 
 
 if __name__ == "__main__":
