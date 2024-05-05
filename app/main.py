@@ -7,9 +7,9 @@ from .bootstrap import create_app
 app = create_app()
 
 
-@app.get("/")
-def index():
-    return RedirectResponse(url="/docs")
+# @app.get("/")
+# def index():
+#     return RedirectResponse(url="/docs")
 
 
 if __name__ == "__main__":
