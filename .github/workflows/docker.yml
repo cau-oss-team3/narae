@@ -20,12 +20,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        audience: sts.amazonaws.com
-        aws-region: ap-northeast-2
-        role-to-assume: arn:aws:iam::637423298185:role/github-actions-for-ecr-push
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
     - name: Login DockerHub
@@ -33,9 +27,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Login Docker for AWS Private ECR
-      id: ecr
-      run: aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.NARAE_ECR_URI }}
     - name: Get timestamp
       id: timestamp
       run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
@@ -45,6 +36,6 @@ jobs:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: codinggroot/narae:${{ env.TIMESTAMP }},codinggroot/narae:latest,${{ secrets.NARAE_ECR_TAG }}
+        tags: codinggroot/narae:${{ env.TIMESTAMP }},codinggroot/narae:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
