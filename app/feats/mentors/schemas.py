@@ -12,41 +12,61 @@ class STICC(BaseModel):
     # token length 제한
     @validator("situation", pre=True)
     def validate_situation_length(cls, v):
-        if len(v) < 100 or len(v) > 256:
+        if len(v) > 256:
             raise AuthenticationFailedException(
                 status_code=413, message="토큰 length가 너무 큼"
+            )
+        elif len(v) < 100:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 작음"
             )
         return v
 
     @validator("task", pre=True)
     def validate_task_length(cls, v):
-        if len(v) < 100 or len(v) > 256:
+        if len(v) > 256:
             raise AuthenticationFailedException(
                 status_code=413, message="토큰 length가 너무 큼"
+            )
+        elif len(v) < 100:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 작음"
             )
         return v
 
     @validator("intent", pre=True)
     def validate_intent_length(cls, v):
-        if len(v) < 100 or len(v) > 256:
+        if len(v) > 256:
             raise AuthenticationFailedException(
                 status_code=413, message="토큰 length가 너무 큼"
+            )
+        elif len(v) < 100:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 작음"
             )
         return v
 
     @validator("concern", pre=True)
     def validate_concern_length(cls, v):
-        if len(v) < 100 or len(v) > 256:
+        if len(v) > 256:
             raise AuthenticationFailedException(
                 status_code=413, message="토큰 length가 너무 큼"
+            )
+        elif len(v) < 100:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 작음"
             )
         return v
 
     @validator("calibrate", pre=True)
     def validate_calibrate_length(cls, v):
-        if len(v) < 100 or len(v) > 256:
+        if len(v) > 256:
             raise AuthenticationFailedException(
                 status_code=413, message="토큰 length가 너무 큼"
+            )
+        elif len(v) < 100:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 작음"
             )
         return v
 
@@ -58,8 +78,12 @@ class Mentor_Detail(BaseModel):
 
     @validator("mentor_name", pre=True)
     def validate_calibrate_length(cls, v):
-        if len(v) < 1 or len(v) > 100:
+        if len(v) > 45:
             raise AuthenticationFailedException(
                 status_code=413, message="토큰 length가 너무 큼"
+            )
+        elif len(v) < 1:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 작음"
             )
         return v
