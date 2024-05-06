@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     base_url: str = "http://localhost:8000"
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     timeout: int = 30  # seconds
+    daily_token_limit: int = 100
 
     secret_key: str
     algorithm: str = "HS256"

@@ -1,6 +1,6 @@
 import logging
 import sys
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger("fastapi")
@@ -17,6 +17,12 @@ class CustomHTTPException(Exception):
 class AuthenticationFailedException(CustomHTTPException):
     def __init__(self, status_code: int = 401, message: str = "Authentication failed"):
         super().__init__(status_code=status_code, err=message)
+
+
+credentials_exception = AuthenticationFailedException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                message="유효하지 않은 정보입니다.",
+            )
 
 
 async def unhandled_custom_exception_handler(

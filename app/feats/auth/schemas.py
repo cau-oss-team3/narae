@@ -1,10 +1,16 @@
-import bcrypt
 import re
 
 from pydantic import field_validator, BaseModel, SecretStr
 
 from app.core.exceptions import AuthenticationFailedException
 
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: str | None = None
 
 class UserLoginRequest(BaseModel):
     email: str
@@ -35,3 +41,7 @@ class UserLoginRequest(BaseModel):
 class UserLoginResponse(BaseModel):
     isSuccess: bool
     token: str
+
+
+class TokenResponse(BaseModel):
+    remaining_tokens: int
