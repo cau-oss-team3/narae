@@ -52,6 +52,8 @@ class Settings(BaseSettings):
 
     cors_origins: List[str]
     database: Database
+    alembic_script_location: str = os.path.join(base_dir, "migrations")
+    alembic_ini: str = os.path.join(base_dir, "alembic.ini")
     gpt_key: str
 
 

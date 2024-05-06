@@ -50,3 +50,7 @@ loggers:
     level: DEBUG
     handlers: [console]
     propagate: no
+
+root:
+  level: DEBUG
+  handlers: [console, rotating_file, json_file]

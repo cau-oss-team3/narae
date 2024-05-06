@@ -4,7 +4,7 @@ from sqlalchemy import select, update, delete
 
 from app.core.exceptions import AuthenticationFailedException
 from app.core.database import get_async_session
-from app.feats.auth.router import login_user
+from app.feats.auth.router import active_user
 
 from .models import Mentor
 from .schemas import Mentor_Detail
@@ -14,9 +14,9 @@ router = APIRouter(prefix="/mentors", tags=["mentors"])
 
 # token으로 user_id 얻기
 def get_user(token):
-    for i in range(len(login_user)):
-        if list(login_user[i].keys())[0] == token:
-            return login_user[i].get(token)
+    for i in range(len(active_user)):
+        if list(active_user[i].keys())[0] == token:
+            return active_user[i].get(token)
 
 
 # 멘토 생성

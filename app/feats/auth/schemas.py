@@ -1,11 +1,14 @@
-from pydantic import field_validator, BaseModel
-from app.core.exceptions import AuthenticationFailedException
+import bcrypt
 import re
 
+from pydantic import field_validator, BaseModel, SecretStr
 
-class UserInput(BaseModel):
+from app.core.exceptions import AuthenticationFailedException
+
+
+class UserLoginRequest(BaseModel):
     email: str
-    password: str
+    password: SecretStr
 
     @field_validator("email")
     @classmethod
@@ -14,15 +17,21 @@ class UserInput(BaseModel):
             return v
         else:
             raise AuthenticationFailedException(
-                status_code=401, message="입력 양식이 맞지 않음"
+                status_code=401, message="유요하지 않은 이메일 형식입니다."
             )
 
     # 비어있는지 검사
     @field_validator("email", "password")
     @classmethod
     def check_empty(cls, v):
-        if not v or v.isspace():
+        if not v:
             raise AuthenticationFailedException(
-                status_code=401, message="입력 양식이 맞지 않음"
+                status_code=401, message="이메일 혹은 비밀번호가 비어있습니다."
             )
+
         return v
+
+
+class UserLoginResponse(BaseModel):
+    isSuccess: bool
+    token: str
