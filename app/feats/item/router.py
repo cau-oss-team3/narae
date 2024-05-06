@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse
@@ -14,10 +15,13 @@ from .schemas import ItemCreate
 router = APIRouter(prefix="/items", tags=["Items"])
 
 
+logger = logging.getLogger("fastapi")
+
 @router.get("/", description="Read items", response_model=List[ItemCreate])
 async def read_items(
     skip: int = 0, limit: int = 10, session: AsyncSession = Depends(get_async_session)
 ):
+    logger.info(f"Reading items from {skip} to {skip + limit}")
     async with session:
         query = select(Item).offset(skip).limit(limit)
         result = await session.execute(query)

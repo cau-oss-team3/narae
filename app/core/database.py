@@ -57,8 +57,6 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionFactory() as session:
-        print(f"ASYNC Pool: {asyncio_engine.pool.status()}")
-
         logger.debug(f"ASYNC Pool: {asyncio_engine.pool.status()}")
         yield session
 

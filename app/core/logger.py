@@ -27,3 +27,5 @@ def set_logging(base_dir: str) -> None:
     # Fallback basic configuration
     logging.basicConfig(level=logging.DEBUG)
     print("WARN:      Fallback to basic logging configuration.")
+
+# logger = logging.getLogger("fastapi")
