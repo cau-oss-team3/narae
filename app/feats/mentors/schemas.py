@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import field_validator, BaseModel, Field
 from app.core.exceptions import AuthenticationFailedException
 
 
@@ -10,7 +10,8 @@ class STICC(BaseModel):
     calibrate: str = Field(min_length=100, max_length=256)
 
     # token length 제한
-    @validator("situation", pre=True)
+    @field_validator("situation", mode="before")
+    @classmethod
     def validate_situation_length(cls, v):
         if len(v) > 256:
             raise AuthenticationFailedException(
@@ -22,7 +23,8 @@ class STICC(BaseModel):
             )
         return v
 
-    @validator("task", pre=True)
+    @field_validator("task", mode="before")
+    @classmethod
     def validate_task_length(cls, v):
         if len(v) > 256:
             raise AuthenticationFailedException(
@@ -34,7 +36,8 @@ class STICC(BaseModel):
             )
         return v
 
-    @validator("intent", pre=True)
+    @field_validator("intent", mode="before")
+    @classmethod
     def validate_intent_length(cls, v):
         if len(v) > 256:
             raise AuthenticationFailedException(
@@ -46,7 +49,8 @@ class STICC(BaseModel):
             )
         return v
 
-    @validator("concern", pre=True)
+    @field_validator("concern", mode="before")
+    @classmethod
     def validate_concern_length(cls, v):
         if len(v) > 256:
             raise AuthenticationFailedException(
@@ -58,7 +62,8 @@ class STICC(BaseModel):
             )
         return v
 
-    @validator("calibrate", pre=True)
+    @field_validator("calibrate", mode="before")
+    @classmethod
     def validate_calibrate_length(cls, v):
         if len(v) > 256:
             raise AuthenticationFailedException(
@@ -76,7 +81,8 @@ class Mentor_Detail(BaseModel):
     mentor_field: int
     mentor_sticc: STICC
 
-    @validator("mentor_name", pre=True)
+    @field_validator("mentor_name", mode="before")
+    @classmethod
     def validate_calibrate_length(cls, v):
         if len(v) > 45:
             raise AuthenticationFailedException(

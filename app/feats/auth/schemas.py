@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validator
+from pydantic import field_validator, BaseModel
 from app.core.exceptions import AuthenticationFailedException
 import re
 
@@ -7,7 +7,8 @@ class UserInput(BaseModel):
     email: str
     password: str
 
-    @validator("email")
+    @field_validator("email")
+    @classmethod
     def validate_email(cls, v):
         if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v):
             return v
@@ -17,7 +18,8 @@ class UserInput(BaseModel):
             )
 
     # 비어있는지 검사
-    @validator("email", "password")
+    @field_validator("email", "password")
+    @classmethod
     def check_empty(cls, v):
         if not v or v.isspace():
             raise AuthenticationFailedException(
