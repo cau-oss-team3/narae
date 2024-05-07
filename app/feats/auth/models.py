@@ -23,3 +23,4 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     limits = relationship("Limit", back_populates="user", cascade="all, delete-orphan")
+    mentors = relationship("Mentor", back_populates="user", cascade="all, delete-orphan")
