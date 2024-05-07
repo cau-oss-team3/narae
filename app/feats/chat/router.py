@@ -7,7 +7,7 @@ from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
 from app.core.websocket import WebsocketConnectionManager, get_websocket_manager
 from app.feats.auth.service import get_current_user
-from app.feats.chat.schemas import ChatRequest, ChatResponseFail, ChatResponseSuccess
+from app.feats.chat.schemas import ChatRequest, ChatResponseFail, MentorResponseSuccess
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -29,7 +29,7 @@ async def websocket_endpoint(
     manager: WebsocketConnectionManager = Depends(get_websocket_manager),
     db: AsyncSession = Depends(get_async_session),
 ):
-    # check if jwt token is valid
+    seq = 0
     try:
         user = await get_current_user(token, db)
         if user is None:
@@ -42,17 +42,15 @@ async def websocket_endpoint(
     while True:
         try:
             data = await websocket.receive_text()
+            print("Received data: ", data)
             chat = ChatRequest.model_validate_json(data)
             print(chat)
+
+            await manager.send_direct_message(
+                MentorResponseSuccess(seq=0, chat_data=f"Hello, {user.email}, you sent: {chat.chat_data}").model_dump_json(), websocket
+            )
+            seq += 1
         except ValueError as e:
             await manager.send_direct_message(ChatResponseFail(
                 err = f"Invalid JSON format: {e}"
             ).model_dump_json(), websocket)
-
-        await manager.send_direct_message(
-            ChatResponseSuccess(chat_data=f"Hello, {user.email}, you sent: {chat}").model_dump_json(), websocket
-        )
-
-        await manager.send_direct_message(
-            f"Message text was: {data}, for action_type: {user.id}", websocket
-        )

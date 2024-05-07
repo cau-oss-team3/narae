@@ -116,7 +116,7 @@ async def getMentor(
         "isSuccess": True,
         "id": id,
         "mentor_detail": found_mentor_detail,
-        "chat_history": "chat-data array가 들어가는 부분",
+        "chat_history": ["기존의 채팅 데이터 불러오기는 아직 지원되지 않습니다. 미래에 지원될 예정입니다. :)"],
     }
 
 
