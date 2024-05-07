@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, ForeignKey, String, Integer
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -23,7 +23,7 @@ class Mentor2(Base):
     mentor_name = Column(String(45), nullable=False)
     mentor_field = Column(Integer, nullable=False)
 
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, ForeignKey('User.id'), nullable=False)
 
     situation = Column(String(256), nullable=False)
     task = Column(String(256), nullable=False)
@@ -31,4 +31,4 @@ class Mentor2(Base):
     concern = Column(String(256), nullable=False)
     calibrate = Column(String(256), nullable=False)
 
-    user = relationship("User", back_populates="limits")
+    user = relationship("User", back_populates="mentors")

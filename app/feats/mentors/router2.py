@@ -7,7 +7,7 @@ from app.core.database import get_async_session
 from app.feats.auth.models import User
 from app.feats.auth.service import get_current_user
 
-from .models import Mentor
+from .models import Mentor2
 from .schemas import Mentor_Detail
 
 router = APIRouter(prefix="/mentors2", tags=["mentors2"])
@@ -23,7 +23,7 @@ async def createMentor(
     creater_id = current_user.id
 
     async with db:
-        query = select(Mentor).filter(creater_id == Mentor.user_id)
+        query = select(Mentor2).filter(creater_id == Mentor2.user_id)
         result = await db.execute(query)
         found_mentor = result.scalars().all()
 
@@ -32,10 +32,7 @@ async def createMentor(
             status_code=423, message="멘토 최대 생성 제한 도달"
         )
 
-    mentor_id = str(creater_id) + input_mentor_detail.mentor_name
-
-    new_mentor = Mentor(
-        id=mentor_id,
+    new_mentor = Mentor2(
         mentor_name=input_mentor_detail.mentor_name,
         mentor_field=input_mentor_detail.mentor_field,
         user_id=creater_id,
@@ -51,7 +48,7 @@ async def createMentor(
         await db.commit()
         await db.refresh(new_mentor)
 
-    return {"isSuccess": True, "id": mentor_id}
+    return {"isSuccess": True, "id": new_mentor.id}
 
 
 # 멘토 리스트 얻기 - getMentorList
@@ -62,7 +59,7 @@ async def getMentorList(
 ):
     creater_id = current_user.id
     async with db:
-        query = select(Mentor).filter(creater_id == Mentor.user_id)
+        query = select(Mentor2).filter(creater_id == Mentor2.user_id)
         result = await db.execute(query)
         found_mentor = result.scalars().all()
 
@@ -74,7 +71,7 @@ async def getMentorList(
             {
                 "id": found_mentor[i].id,
                 "name": found_mentor[i].mentor_name,
-                "daily_action": "today's daily action",
+                "daily_action": "",
             }
         )
 
@@ -84,11 +81,13 @@ async def getMentorList(
 # 멘토 얻기 - getMentor
 @router.get("/{id}")
 async def getMentor(
-    id: str,
+    id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    async with db:
-        query = select(Mentor).filter(id == Mentor.id)
+    async with db: #
+        query = select(Mentor2).filter(Mentor2.id == id, Mentor2.user_id == current_user.id)
+
         result = await db.execute(query)
         found_mentor = result.scalar()
 
@@ -123,12 +122,13 @@ async def getMentor(
 
 @router.put("/{id}")
 async def updateMentor(
-    id: str,
+    id: int,
     input_mentor_detail: Mentor_Detail,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
-        query = select(Mentor).filter(id == Mentor.id)
+        query = select(Mentor2).filter(id == Mentor2.id, Mentor2.user_id == current_user.id)
         result = await db.execute(query)
         found_mentor = result.scalar()
 
@@ -155,8 +155,8 @@ async def updateMentor(
 
     async with db:
         query = (
-            update(Mentor)
-            .where(Mentor.id == found_mentor.id)
+            update(Mentor2)
+            .where(Mentor2.id == found_mentor.id)
             .values(
                 mentor_name=found_mentor.mentor_name,
                 mentor_field=found_mentor.mentor_field,
@@ -175,11 +175,12 @@ async def updateMentor(
 
 @router.delete("/{id}")
 async def deleteMentor(
-    id: str,
+    id: int,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
-        query = select(Mentor).filter(id == Mentor.id)
+        query = select(Mentor2).filter(id == Mentor2.id, Mentor2.user_id == current_user.id)
         result = await db.execute(query)
         mentor_to_delete = result.scalar()
 
@@ -189,7 +190,7 @@ async def deleteMentor(
         )
 
     async with db:
-        query = delete(Mentor).where(Mentor.id == id)
+        query = delete(Mentor2).where(Mentor2.id == id)
         await db.execute(query)
         await db.commit()
 
