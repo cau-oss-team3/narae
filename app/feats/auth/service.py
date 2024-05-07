@@ -71,7 +71,7 @@ async def login_user(db: AsyncSession, email: str, password: str):
     user = await find_user_by_email(db, email)
     if user is None:
         """유저가 존재하지 않을 때"""
-        user = await create_new_user(email, password)
+        user = await create_new_user(db, email, password)
     elif not bcrypt.checkpw(password.encode(), user.password.encode()):
         """비밀번호가 일치하지 않을 때"""
         raise credentials_exception

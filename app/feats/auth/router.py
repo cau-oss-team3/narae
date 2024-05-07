@@ -7,6 +7,7 @@ from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
 from app.feats.auth.models import User
 from app.feats.auth.schemas import (
+    TokenInJson,
     TokenResponse,
     UserLoginRequest,
     UserLoginResponse,
@@ -29,8 +30,25 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
+@router.post("/token_json")
+async def login_for_access_token_in_json(
+    input_user: UserLoginRequest,
+    db: AsyncSession = Depends(get_async_session),
+) -> TokenInJson:
+    user = await login_user(db, input_user.email, input_user.password.get_secret_value())
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    token = generate_token(user)
+    return TokenInJson(access_token=token, token_type="bearer")
+
+
 @router.post("/token")
-async def login_for_access_token(
+async def login_for_access_token_in_form(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: AsyncSession = Depends(get_async_session),
 ) -> Token:

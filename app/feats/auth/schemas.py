@@ -4,6 +4,10 @@ from pydantic import field_validator, BaseModel, SecretStr
 
 from app.core.exceptions import AuthenticationFailedException
 
+class TokenInJson(BaseModel):
+    isSuccess: bool = True
+    access_token: str
+    token_type: str
 
 class Token(BaseModel):
     access_token: str
