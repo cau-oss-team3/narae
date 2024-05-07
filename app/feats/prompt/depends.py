@@ -8,8 +8,8 @@ def get_openai_client() -> OpenAI:
     return OpenAI(api_key=settings.gpt_key)
 
 
-def get_direction_for_study() -> str:
-    return format_direction_for_study()
+def get_direction_for_study(field: int = 0) -> str:
+    return format_direction_for_study(field)
 
 
 def get_recommend_action() -> str:
@@ -20,7 +20,7 @@ def get_answer_for_question() -> str:
     return format_answer_for_question()
 
 
-def format_direction_for_study():
+def format_direction_for_study(field: int = 0):
     """
     1. 다음에 해야 하는 "학습 방향"을 제시해줘야 한다.
     - DB에 저장해서 사용자가 다시 찾아볼 수 있도록 제공한다.
@@ -28,13 +28,23 @@ def format_direction_for_study():
     - 액션을 하기 전 사용자가 학습 방향을 먼저 제시받아야 한다.
     """
 
-    return """
-    I've heard that you are a world-renowned coach in the field of backend development coaching. I want to improve my expertise in backend within this field, but I'm having trouble. I will tell you what I've tried so far and what hasn't worked.
-    Based on this information, could you assess my current progress, identify obstacles, and suggest next action items? If necessary, please provide motivational feedback. Additionally, please use the following details to ask me questions to enhance my API design skills and provide expert feedback on my responses. If my responses are lacking, kindly suggest areas for improvement, necessary understandings, and request further explanation.
-    I've heard from various sources about your esteemed reputation as a world-renowned coach specializing in backend development. My eagerness to enhance my proficiency in backend within this vast domain led me to seek your guidance. Despite my sincere efforts, I find myself encountering hurdles along the way. I'm determined to overcome these obstacles and propel my skills forward. To provide you with context, I'll outline the strategies I've employed thus far, along with the challenges I've faced in executing them effectively.
-    Given this backdrop, I humbly request your assessment of my current progress. I'm keen to receive your expert insights into the roadblocks impeding my advancement. Additionally, I seek your guidance on charting the most effective course of action moving forward. Your tailored recommendations, aligned with my current progress and aspirations, would be invaluable. Moreover, I'm open to receiving motivational feedback to bolster my resolve and ignite a renewed sense of determination. Furthermore, I eagerly anticipate your expertise in refining my API design skills. Feel free to pose questions aimed at enhancing my understanding and providing constructive feedback on my responses. Your guidance in identifying areas for improvement and suggesting necessary insights would be greatly appreciated.
-    Your reputation as a distinguished coach in backend development precedes you, and I'm eager to tap into your expertise to elevate my skills in this domain. Despite my earnest efforts, I've hit a roadblock in my quest for improvement. I believe sharing my experiences and challenges with you can provide valuable insights to chart a more effective path forward.
-    Additionally, I'm eager to leverage your expertise to enhance my API design skills. Please don't hesitate to engage me with thought-provoking questions and offer expert feedback on my responses. Your guidance in pinpointing areas for improvement and providing necessary clarifications will be invaluable as I strive for excellence in this field.
+    if field == 0:
+        field = "backend development"
+    elif field == 1:
+        field = "frontend development"
+    else:
+        field = "full-stack development"
+
+    return f"""
+    I've heard that you are a world-renowned coach in the field of {field} coaching. I want to improve my expertise in {field}, but I'm having trouble. I will tell you what I've tried so far and what hasn't worked.
+    Based on this information, could you assess my current progress, identify obstacles, and suggest next action items?
+    If necessary, please provide motivational feedback.
+    Additionally, please use the following details to ask me questions to enhance my skills and provide expert feedback on my responses.
+    If my responses are lacking, kindly suggest areas for improvement, necessary understandings, and request further explanation.
+    I believe sharing my experiences and challenges with you can provide valuable insights to chart a more effective path forward.
+    Additionally, I'm eager to leverage your expertise to enhance my {field} skills. Please don't hesitate to engage me with thought-provoking questions and offer expert feedback on my responses. Your guidance in pinpointing areas for improvement and providing necessary clarifications will be invaluable as I strive for excellence in this field.
+    Please consider my journey thus far and provide your expert assessment of my progress. I'm eager to receive your insights on overcoming obstacles and identifying actionable steps to propel my learning journey forward. Your tailored recommendations, motivational feedback, and expert guidance on {field} area will be instrumental in shaping my growth and development.
+    Use only Korean for responses.
     """
 
 

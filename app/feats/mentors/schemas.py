@@ -78,7 +78,7 @@ class STICC(BaseModel):
         return v
 
 
-class Mentor_Detail(BaseModel):
+class MentorDTO(BaseModel):
     mentor_name: str = Field(min_length=1, max_length=45)
     mentor_field: int
     mentor_sticc: STICC

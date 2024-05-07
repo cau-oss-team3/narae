@@ -18,7 +18,7 @@ class ChatRequest(BaseModel):
     chat_type: int = Field(ge=0, le=8)
     chat_data: str = ""
     candidates: list[str] = []
-    timestamp: int = datetime.now().timestamp()
+    timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
 
 class MentorChatResponse(BaseModel):
@@ -34,7 +34,7 @@ class MentorChatResponse(BaseModel):
     chat_type: int = 1
     chat_data: str = ""
     candidates: list[str] = []
-    timestamp: int = datetime.now().timestamp()
+    timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
 
 class MentorInfoResponse(BaseModel):
@@ -50,7 +50,7 @@ class MentorInfoResponse(BaseModel):
     chat_type: int = 2
     chat_data: str = ""
     candidates: list[str] = []
-    timestamp: int = datetime.now().timestamp()
+    timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
 
 class MentorChatResponse(BaseModel):
@@ -66,7 +66,7 @@ class MentorChatResponse(BaseModel):
     chat_type: int = 1
     chat_data: str = ""
     candidates: list[str] = []
-    timestamp: int = datetime.now().timestamp()
+    timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
 
 

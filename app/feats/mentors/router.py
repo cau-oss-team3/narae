@@ -7,7 +7,7 @@ from app.core.database import get_async_session
 from app.feats.auth.router import active_user
 
 from .models import Mentor
-from .schemas import Mentor_Detail
+from .schemas import MentorDTO
 
 router = APIRouter(prefix="/mentors", tags=["mentors"])
 
@@ -22,7 +22,7 @@ def get_user(token):
 # 멘토 생성
 @router.post("")
 async def createMentor(
-    input_mentor_detail: Mentor_Detail,
+    input_mentor_detail: MentorDTO,
     token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
@@ -117,7 +117,7 @@ async def getMentor(
         "mentor_field": found_mentor.mentor_field,
         "mentor_sticc": sticc_form,
     }
-    found_mentor_detail = Mentor_Detail(**mentor_detail_form)
+    found_mentor_detail = MentorDTO(**mentor_detail_form)
 
     # TODO chat data array 반환해주기
     return {
@@ -131,7 +131,7 @@ async def getMentor(
 @router.put("/{id}")
 async def updateMentor(
     id: str,
-    input_mentor_detail: Mentor_Detail,
+    input_mentor_detail: MentorDTO,
     token: str = Header(default=None),
     db: AsyncSession = Depends(get_async_session),
 ):
