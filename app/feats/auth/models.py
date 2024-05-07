@@ -17,10 +17,10 @@ class Limit(Base):
 # user table 생성 (id는 자동으로 붙음, primary key = id)
 class User(Base):
     __tablename__ = "User"
-    email = Column(String(120), unique=True, index=True, nullable=False, autoincrement=True)
+    email = Column(String(120), unique=True, index=True, nullable=False)
     password = Column(String(100), nullable=False)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     limits = relationship("Limit", back_populates="user", cascade="all, delete-orphan")
-    mentors = relationship("Mentor", back_populates="user", cascade="all, delete-orphan")
+    mentors = relationship("Mentor2", back_populates="user", cascade="all, delete-orphan")
