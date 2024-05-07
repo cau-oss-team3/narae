@@ -21,7 +21,7 @@ class ChatRequest(BaseModel):
     timestamp: int = datetime.now().timestamp()
     visibility: bool = True
 
-class MentorResponseSuccess(BaseModel):
+class MentorChatResponse(BaseModel):
     """
     seq: 2,
     chat_type: 1,
@@ -37,6 +37,39 @@ class MentorResponseSuccess(BaseModel):
     timestamp: int = datetime.now().timestamp()
     visibility: bool = True
 
+class MentorInfoResponse(BaseModel):
+    """
+    seq: 0,
+    chat_type: 2,
+    chat_data: "멘토 정보 출력",
+    candidates: [],
+    timestamp: new Date().getTime(),
+    visibility: true,
+    """
+    seq: int = 0
+    chat_type: int = 2
+    chat_data: str = ""
+    candidates: list[str] = []
+    timestamp: int = datetime.now().timestamp()
+    visibility: bool = True
+
+class MentorChatResponse(BaseModel):
+    """
+    seq: 2,
+    chat_type: 1,
+    chat_data: "멘토 발화 테스트 1",
+    candidates: [],
+    timestamp: new Date().getTime(),
+    visibility: true,
+    """
+    seq: int = 0
+    chat_type: int = 1
+    chat_data: str = ""
+    candidates: list[str] = []
+    timestamp: int = datetime.now().timestamp()
+    visibility: bool = True
+
+
 class ChatResponseFail(BaseModel):
     isSuccess: bool = False
     err: str
@@ -46,7 +79,7 @@ class ChatResponseFail(BaseModel):
 [
     {
         seq: 0,
-        type: 2,
+        chat_type: 2,
         chat_data: "멘토 정보 출력",
         candidates: [],
         timestamp: new Date().getTime(),
@@ -54,7 +87,7 @@ class ChatResponseFail(BaseModel):
     },
     {
         seq: 1,
-        type: 3,
+        chat_type: 3,
         chat_data: "이전 대화 요약",
         candidates: [],
         timestamp: new Date().getTime(),
@@ -62,7 +95,7 @@ class ChatResponseFail(BaseModel):
     },
     {
         seq: 2,
-        type: 1,
+        chat_type: 1,
         chat_data: "멘토 발화 테스트 1",
         candidates: [],
         timestamp: new Date().getTime(),
@@ -70,7 +103,7 @@ class ChatResponseFail(BaseModel):
     },
     {
         seq: 3,
-        type: 0,
+        chat_type: 0,
         chat_data: "유저 발화 테스트 1",
         candidates: [],
         timestamp: new Date().getTime(),
@@ -78,7 +111,7 @@ class ChatResponseFail(BaseModel):
     },
     {
         seq: 4,
-        type: 4,
+        chat_type: 4,
         chat_data: "Action 수락 요청",
         candidates: ["Action 1", "Action 2", "Action 3"],
         timestamp: new Date().getTime(),
@@ -86,7 +119,7 @@ class ChatResponseFail(BaseModel):
     },
     {
         seq: 5,
-        type: 5,
+        chat_type: 5,
         chat_data: "Action 결과 제출 요청",
         candidates: ["Action 1"], // 무조건 0번 index 사용
         timestamp: new Date().getTime(),
@@ -94,7 +127,7 @@ class ChatResponseFail(BaseModel):
     },
     {
         seq: 6,
-        type: 1,
+        chat_type: 1,
         chat_data: "멘토 발화 테스트 2",
         candidates: [],
         timestamp: new Date().getTime(),

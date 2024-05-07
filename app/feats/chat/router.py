@@ -7,7 +7,7 @@ from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
 from app.core.websocket import WebsocketConnectionManager, get_websocket_manager
 from app.feats.auth.service import get_current_user
-from app.feats.chat.schemas import ChatRequest, ChatResponseFail, MentorResponseSuccess
+from app.feats.chat.schemas import ChatRequest, ChatResponseFail, MentorChatResponse, MentorInfoResponse
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -39,15 +39,24 @@ async def websocket_endpoint(
             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION,reason="Invalid token")
 
     await manager.connect(websocket)
+
+    # Send MentorInfoResponse
+    await manager.send_direct_message(
+        MentorInfoResponse(seq=0).model_dump_json(), websocket
+    )
+    seq += 1
+
     while True:
         try:
+
+
             data = await websocket.receive_text()
             print("Received data: ", data)
             chat = ChatRequest.model_validate_json(data)
             print(chat)
 
             await manager.send_direct_message(
-                MentorResponseSuccess(seq=0, chat_data=f"Hello, {user.email}, you sent: {chat.chat_data}").model_dump_json(), websocket
+                MentorChatResponse(seq=0, chat_data=f"Hello, {user.email}, you sent: {chat.chat_data}").model_dump_json(), websocket
             )
             seq += 1
         except ValueError as e:
