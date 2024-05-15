@@ -21,6 +21,7 @@ class ChatRequest(BaseModel):
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
 
+
 class MentorChatResponse(BaseModel):
     """
     seq: 2,
@@ -30,12 +31,14 @@ class MentorChatResponse(BaseModel):
     timestamp: new Date().getTime(),
     visibility: true,
     """
+
     seq: int = 0
     chat_type: int = 1
     chat_data: str = ""
     candidates: list[str] = []
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
+
 
 class MentorInfoResponse(BaseModel):
     """
@@ -46,12 +49,14 @@ class MentorInfoResponse(BaseModel):
     timestamp: new Date().getTime(),
     visibility: true,
     """
+
     seq: int = 0
     chat_type: int = 2
     chat_data: str = ""
     candidates: list[str] = []
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
+
 
 class MentorChatResponse(BaseModel):
     """
@@ -62,6 +67,7 @@ class MentorChatResponse(BaseModel):
     timestamp: new Date().getTime(),
     visibility: true,
     """
+
     seq: int = 0
     chat_type: int = 1
     chat_data: str = ""
@@ -135,3 +141,11 @@ class ChatResponseFail(BaseModel):
     },
 ];
 """
+
+
+class Chatting(BaseModel):
+    seq: int
+    chat_type: int = Field(ge=0, le=8)
+    chat_data: str = ""
+    candidates: list[str] = []
+    visibility: bool = True

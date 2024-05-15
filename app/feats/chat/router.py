@@ -8,12 +8,19 @@ from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
 from app.core.websocket import WebsocketConnectionManager, get_websocket_manager
 from app.feats.auth.service import get_current_user
-from app.feats.chat.schemas import ChatRequest, ChatResponseFail, MentorChatResponse, MentorInfoResponse
+from app.feats.chat.schemas import (
+    ChatRequest,
+    ChatResponseFail,
+    MentorChatResponse,
+    MentorInfoResponse,
+)
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.mentors.service import getMentor2ById
 from app.feats.prompt.depends import get_openai_client
 from app.feats.prompt.service import get_qna_answer
-
+from app.feats.chat.schemas import Chatting
+from app.feats.chat.models import ChatHistory
+from app.feats.chat.service import create_chatting, get_chatHistoryList
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -40,11 +47,14 @@ async def websocket_endpoint(
     try:
         user = await get_current_user(token, db)
         if user is None:
-            raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION,reason="Invalid token")
+            raise WebSocketException(
+                code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token"
+            )
     except Exception as e:
         if isinstance(e, AuthenticationFailedException):
-            raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION,reason="Invalid token")
-
+            raise WebSocketException(
+                code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token"
+            )
 
     await manager.connect(websocket)
 
@@ -68,6 +78,35 @@ async def websocket_endpoint(
             )
             seq += 1
         except ValueError as e:
-            await manager.send_direct_message(ChatResponseFail(
-                err = f"Invalid JSON format: {e}"
-            ).model_dump_json(), websocket)
+            await manager.send_direct_message(
+                ChatResponseFail(err=f"Invalid JSON format: {e}").model_dump_json(),
+                websocket,
+            )
+
+
+@router.post("/chathistory")
+async def createChatHistory(
+    mentor_id: int,
+    chatting: Chatting,
+    token: Annotated[str, Depends(get_token)],
+    db: AsyncSession = Depends(get_async_session),
+):
+    # TODO 빈 user면 에러 반환
+    user = await get_current_user(token, db)
+
+    create_chatting(chatting, user.id, mentor_id, db)
+
+    return {"isSuccess": True}
+
+
+@router.get("/chathistory")
+async def getChatHistory(
+    mentor_id: int,
+    token: Annotated[str, Depends(get_token)],
+    db: AsyncSession = Depends(get_async_session),
+):
+    # TODO 빈 user면 에러 반환
+    user = await get_current_user(token, db)
+    found_chathistory = get_chatHistoryList(user.id, mentor_id, db)
+
+    return {"isSuccess": True, "chathistory": found_chathistory}
