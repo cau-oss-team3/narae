@@ -147,5 +147,5 @@ class Chatting(BaseModel):
     seq: int
     chat_type: int = Field(ge=0, le=8)
     chat_data: str = ""
-    candidates: list[str] = []
+    timestamp: int
     visibility: bool = True

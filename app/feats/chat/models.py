@@ -1,11 +1,11 @@
+from datetime import datetime
 from sqlalchemy import (
     Column,
     ForeignKey,
-    String,
     Integer,
-    PrimaryKeyConstraint,
     Text,
     Boolean,
+    BigInteger,
 )
 
 from app.core.database import Base
@@ -19,4 +19,9 @@ class ChatHistory(Base):
     type = Column(Integer, nullable=False)
     chat_data = Column(Text, nullable=False)
     visibility = Column(Boolean, nullable=False)
-    candidates = Column(String, nullable=False)  # string 그대로 받아서 리스트를 파싱
+    timestamp = Column(BigInteger, nullable=False)
+    created_at = Column(
+        BigInteger,
+        default=lambda: int(datetime.now().timestamp() * 1000),
+        nullable=False,
+    )

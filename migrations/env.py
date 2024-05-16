@@ -1,4 +1,6 @@
+import asyncio
 from logging.config import fileConfig
+import sys
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -72,6 +74,9 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

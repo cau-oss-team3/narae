@@ -15,12 +15,13 @@ from app.feats.chat.schemas import (
     MentorInfoResponse,
 )
 from app.feats.mentors.schemas import MentorDTO
+from app.feats.auth.models import User
 from app.feats.mentors.service import getMentor2ById
 from app.feats.prompt.depends import get_openai_client
 from app.feats.prompt.service import get_qna_answer
 from app.feats.chat.schemas import Chatting
-from app.feats.chat.models import ChatHistory
 from app.feats.chat.service import create_chatting, get_chatHistoryList
+
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -88,13 +89,10 @@ async def websocket_endpoint(
 async def createChatHistory(
     mentor_id: int,
     chatting: Chatting,
-    token: Annotated[str, Depends(get_token)],
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    # TODO 빈 user면 에러 반환
-    user = await get_current_user(token, db)
-
-    create_chatting(chatting, user.id, mentor_id, db)
+    await create_chatting(chatting, current_user.id, mentor_id, db)
 
     return {"isSuccess": True}
 
@@ -102,11 +100,10 @@ async def createChatHistory(
 @router.get("/chathistory")
 async def getChatHistory(
     mentor_id: int,
-    token: Annotated[str, Depends(get_token)],
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    # TODO 빈 user면 에러 반환
-    user = await get_current_user(token, db)
-    found_chathistory = get_chatHistoryList(user.id, mentor_id, db)
+
+    found_chathistory = await get_chatHistoryList(current_user.id, mentor_id, db)
 
     return {"isSuccess": True, "chathistory": found_chathistory}
