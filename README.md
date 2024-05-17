@@ -6,7 +6,7 @@ Languages: \[English\] | [\[한국어\]](README.ko.md)
 
 ## Features
 
-*Narae** is an llm-powered mentoring service designed to enhance user learning in software development fields such as backend and frontend development. Here are the key features:
+*Narae* is an llm-powered mentoring service designed to enhance user learning in software development fields such as backend and frontend development. Here are the key features:
 
 - **Personalized Learning Paths:** Users set their development goals and receive tailored learning plans based on their individual needs, goals, and circumstances.
 - **AI-Driven Guidance:** AI suggests actions and offers in-depth explanations and exercises on challenging topics.
