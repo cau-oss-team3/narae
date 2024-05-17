@@ -8,7 +8,7 @@ Languages: \[English\] | [\[한국어\]](README.ko.md)
 
 *Narae* is an llm-powered mentoring service designed to enhance user learning in software development fields such as backend and frontend development. Here are the key features:
 
-- **Personalized Learning Paths:** Users set their development goals and receive tailored learning plans based on their individual needs, goals, and circumstances.
+- **Personalized Learning Information:** Users set their development goals and receive tailored learning plans based on their individual needs, goals, and circumstances.
 - **AI-Driven Guidance:** AI suggests actions and offers in-depth explanations and exercises on challenging topics.
 - **Progress Tracking and Evaluation:** AI summarizes interactions for progress tracking and generates daily quizzes to reinforce learning.
 - **Advanced Knowledge Mentoring:** Utilizes OpenAI's embedding technologies for deep, specialized knowledge delivery.
@@ -109,7 +109,13 @@ GPT_KEY=your_gpt_key # sk-xxxxxx
    pip install -r requirements.txt
    ```
 
-4. Run the application:
+4. (If needed) Apply latest database migrations:
+
+   ```sh
+   alembic upgrade head
+   ```
+
+5. Run the application:
 
    ```sh
    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -117,7 +123,7 @@ GPT_KEY=your_gpt_key # sk-xxxxxx
 
    if database connection error occurs, check the database connection information in the `.env` file.
 
-5. Access Narae at http://localhost:8000
+6. Access Narae at http://localhost:8000
 
 ### Running Narae Using Docker
 
