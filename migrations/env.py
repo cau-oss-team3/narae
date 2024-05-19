@@ -1,11 +1,11 @@
-import asyncio
-from logging.config import fileConfig
 import sys
+import asyncio
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
+from logging.config import fileConfig
 from app.feats.models import *  # noqa
 from app.settings import settings
 from app.core.database import Base
@@ -74,7 +74,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    if sys.platform == "win32":
+    if sys.platform == "win32": # For windows
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     connectable = engine_from_config(
