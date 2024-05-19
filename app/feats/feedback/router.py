@@ -11,7 +11,7 @@ from app.feats.feedback.service import create_feedback
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
 
-@router.post("{mentor_id}")
+@router.post("/{mentor_id}")
 async def createFeedback(
     mentor_id: int,
     feedback_recieved: Feedback_Recieved,

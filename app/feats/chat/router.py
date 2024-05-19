@@ -85,7 +85,7 @@ async def websocket_endpoint(
             )
 
 
-@router.post("/chathistory")
+@router.post("/chathistory/{mentor_id}")
 async def createChatHistory(
     mentor_id: int,
     chatting: Chatting,
@@ -97,7 +97,7 @@ async def createChatHistory(
     return {"isSuccess": True}
 
 
-@router.get("/chathistory")
+@router.get("/chathistory/{mentor_id}")
 async def getChatHistory(
     mentor_id: int,
     current_user: User = Depends(get_current_user),
