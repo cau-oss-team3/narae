@@ -23,7 +23,7 @@ from .depends import (
 router = APIRouter(prefix="/prompt", tags=["prompt"])
 
 OPENAI_MODEL = "gpt-3.5-turbo-1106"
-
+OPENAI_EMB_MODEL = "text-embedding-3-small"
 
 # @router.post("/direction/")
 # def get_study_direction(
@@ -85,7 +85,7 @@ def get_recommended_action(
     existing_learning,
     learning_goal,
     abandon_reason,
-    recommend_action = Depends(get_recommend_action),
+    recommend_action=Depends(get_recommend_action),
     client: OpenAI = Depends(get_openai_client),
 ):
     """
@@ -110,11 +110,11 @@ def get_recommended_action(
         messages=[
             {
                 "role": "system",
-                "content": "You are a guide who suggests the next action which depends to the today's study direction. Your message is given to the user after the's study direction is given. Make sure your advice is specific enough to be actionable and at the right level of difficulty." + \
-                           "Also, make sure to motivate the user to keep going." + \
-                           "If the user completes the action, please provide feedback on how they completed it." + \
-                           "If the user abandons the action, ask for the reason and suggest the next recommended action based on the reason." + \
-                           f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease recommend an action that can be done according to today's learning direction."
+                "content": "You are a guide who suggests the next action which depends to the today's study direction. Your message is given to the user after the's study direction is given. Make sure your advice is specific enough to be actionable and at the right level of difficulty."
+                + "Also, make sure to motivate the user to keep going."
+                + "If the user completes the action, please provide feedback on how they completed it."
+                + "If the user abandons the action, ask for the reason and suggest the next recommended action based on the reason."
+                + f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease recommend an action that can be done according to today's learning direction.",
             },
             {
                 "role": "assistant",
@@ -137,20 +137,20 @@ def get_recommended_action(
     )
 
     # 사용자가 액션을 완료할 시 이에 대한 응답
-    response_text = response.choices[0].message.content.strip()
-    if "completed" in response_text.lower():
+    response_text = response.choices[0].message.content.strip().lower()
+    if "completed" in response_text:
         feedback_prompt = "Please provide feedback on how you completed the action."
         response_with_feedback = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                  {
-                     "role": "system",
-                     "content": feedback_prompt,
-                  },
-                  {
-                     "role": "user",
-                     "content": response_text,
-                  }
+                {
+                    "role": "system",
+                    "content": feedback_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": response_text,
+                },
             ],
             temperature=0.5,
             max_tokens=150,
@@ -170,13 +170,13 @@ def get_recommended_action(
             model=OPENAI_MODEL,
             messages=[
                 {
-                     "role": "system",
-                     "content": reason_prompt,
+                    "role": "system",
+                    "content": reason_prompt,
                 },
                 {
                     "role": "user",
                     "content": abandon_reason,
-                }
+                },
             ],
             temperature=0.75,
             max_tokens=150,
@@ -187,14 +187,14 @@ def get_recommended_action(
         next_action_response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                  {
-                     "role": "system",
-                     "content": next_action_prompt,
-                  },
-                  {
-                     "role": "user",
-                     "content": reason_response.choices[0].message.content.strip(),
-                  }
+                {
+                    "role": "system",
+                    "content": next_action_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": reason_response.choices[0].message.content.strip(),
+                },
             ],
             temperature=0.75,
             max_tokens=150,
@@ -283,3 +283,54 @@ def test_gpt(sticc: UserSituationRequest, client: OpenAI = Depends(get_openai_cl
    return {"response": response.choices[0].message.content}
 
 """
+
+
+def get_embedding(text, client):
+    text = text.replace("\n", " ")
+    return (
+        client.embeddings.create(input=[text], model=OPENAI_EMB_MODEL).data[0].embedding
+    )
+
+
+@router.post("/question-emb/")
+def get_answer_question_and_code(
+    user_question,
+    study_direction=Depends(get_answer_for_question),
+    client: OpenAI = Depends(get_openai_client),
+):
+    """
+    나의 관심분야에 대한 질문에 <답>을 해줘야 한다.
+     - 기본적인 채팅의 형태로 이루어진다.
+     - 임베딩이 사용할 수 있으면 좋다.
+    """
+    messages = (
+        [
+            {
+                "role": "system",
+                "content": "You are a teacher who gives answer to the question which the user gives. Please provide an answer to the user's question about your areas of interest.",
+            },
+            {
+                "role": "user",
+                "content": user_question,
+            },
+            {
+                "role": "user",
+                "content": study_direction.replace("\n", " "),
+            },
+        ],
+    )
+
+    response = client.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=messages,
+        temperature=0.5,
+        max_tokens=150,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
+
+    code = get_embedding(messages[0]["content"], client)
+    print(code, ":", len(code))  # 길이 테스트용 코드
+
+    return (response.choices[0].message.content.strip(), code)
