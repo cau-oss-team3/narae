@@ -7,7 +7,7 @@ MIN_LENGTH = 1
 class Feedback_Recieved(BaseModel):
     type: int
     content: str
-    context: str
+    context: str = "comment to feedback"
 
     @field_validator("content", mode="before")
     @classmethod
