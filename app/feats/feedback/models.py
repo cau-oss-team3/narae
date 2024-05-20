@@ -15,6 +15,7 @@ class Feedback(Base):
     user_id = Column(Integer, ForeignKey("User.id"), nullable=False)
     mentor_id = Column(Integer, ForeignKey("Mentor2.id"), nullable=False)
     type = Column(Integer, nullable=False)
+    rate = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(
         BigInteger,

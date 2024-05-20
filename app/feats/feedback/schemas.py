@@ -1,11 +1,12 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from app.core.exceptions import AuthenticationFailedException
 
 MIN_LENGTH = 1
 
 
-class Feedback_Recieved(BaseModel):
+class FeedbackDTO(BaseModel):
     type: int
+    rate: int = Field(ge=0, le=5)
     content: str
     context: str = ""
 
