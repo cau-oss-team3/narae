@@ -1,5 +1,9 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from app.core.exceptions import AuthenticationFailedException
+
+MIN_LENGTH = 1
 
 
 class ChatRequest(BaseModel):
@@ -21,6 +25,7 @@ class ChatRequest(BaseModel):
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
 
+
 class MentorChatResponse(BaseModel):
     """
     seq: 2,
@@ -30,12 +35,14 @@ class MentorChatResponse(BaseModel):
     timestamp: new Date().getTime(),
     visibility: true,
     """
+
     seq: int = 0
     chat_type: int = 1
     chat_data: str = ""
     candidates: list[str] = []
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
+
 
 class MentorInfoResponse(BaseModel):
     """
@@ -46,12 +53,14 @@ class MentorInfoResponse(BaseModel):
     timestamp: new Date().getTime(),
     visibility: true,
     """
+
     seq: int = 0
     chat_type: int = 2
     chat_data: str = ""
     candidates: list[str] = []
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
+
 
 class MentorChatResponse(BaseModel):
     """
@@ -62,6 +71,7 @@ class MentorChatResponse(BaseModel):
     timestamp: new Date().getTime(),
     visibility: true,
     """
+
     seq: int = 0
     chat_type: int = 1
     chat_data: str = ""
@@ -135,3 +145,20 @@ class ChatResponseFail(BaseModel):
     },
 ];
 """
+
+
+class Chatting(BaseModel):
+    seq: int
+    chat_type: int = Field(ge=0, le=8)
+    chat_data: str = ""
+    timestamp: int
+    visibility: bool = True
+
+    @field_validator("chat_data", mode="before")
+    @classmethod
+    def validate_chat_data_length(cls, v):
+        if len(v) < MIN_LENGTH:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 작음"
+            )
+        return v

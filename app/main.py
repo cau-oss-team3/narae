@@ -1,8 +1,9 @@
+import asyncio
+import sys
 from fastapi.responses import RedirectResponse
 import uvicorn
 
 from .bootstrap import create_app
-
 
 app = create_app()
 
