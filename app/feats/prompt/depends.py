@@ -1,3 +1,4 @@
+from fastapi import Depends
 from openai import OpenAI
 
 from app.feats.prompt.schemas import UserSituationRequest
@@ -8,26 +9,16 @@ def get_openai_client() -> OpenAI:
     return OpenAI(api_key=settings.gpt_key)
 
 
-def get_direction_for_study(field: int = 0) -> str:
-    return format_direction_for_study(field)
+def get_embedding(text, client: OpenAI = Depends(settings.gpt_model)):
+    text = text.replace("\n", " ")
+    return (
+        client.embeddings.create(input=[text], model=settings.gpt_embedding_model)
+        .data[0]
+        .embedding
+    )
 
 
-def get_recommend_action() -> str:
-    return format_recommend_action()
-
-
-def get_answer_for_question() -> str:
-    return format_answer_for_question()
-
-
-def format_direction_for_study(field: int = 0):
-    """
-    1. 다음에 해야 하는 "학습 방향"을 제시해줘야 한다.
-    - DB에 저장해서 사용자가 다시 찾아볼 수 있도록 제공한다.
-    - 오늘 접속한 경우 띄워준다.
-    - 액션을 하기 전 사용자가 학습 방향을 먼저 제시받아야 한다.
-    """
-
+def get_prompt_of_curriculum(field: int = 0) -> str:
     if field == 0:
         field = "backend development"
     elif field == 1:
@@ -48,9 +39,9 @@ def format_direction_for_study(field: int = 0):
     """
 
 
-def format_recommend_action():
+def get_prompt_of_daily_action() -> str:
     """
-    2. 오늘 학습 방향에 따라 실천 가능한 ***액션을*** 추천한다.
+    2. 오늘 학습 방향에 따라 실천 가능한 **액션을** 추천한다.
     - 이때 실천 가능할만큼 구체적이고 적절한 난이도의 조언을 해야 한다.
     - 내가 처음인지/어디까지 해봤는지 알아야 한다.
     - 액션을 어떻게 완수했는지 알릴 수 있어야 한다. 액션 완수 내용을 말하면 피드백 해줘야 한다.
@@ -64,9 +55,9 @@ def format_recommend_action():
     """
 
 
-def format_answer_for_question():
-    """
-    3. 나의 현재 학습 분야에 대한 질문에 ***답***을 해줘야 한다.
+def get_prompt_of_qna() -> str:
+    r"""
+    3. 나의 현재 학습 분야에 대한 질문에 **답**을 해줘야 한다.
     - 기본적인 채팅의 형태로 이루어진다.
     - 임베딩이 사용할 수 있으면 좋다.
     """
@@ -82,8 +73,6 @@ def format_answer_for_question():
 
 def format_sticc_for_coaching(sticc: UserSituationRequest):
     """
-    NOTE: 현재로서는 사용할 지 알 수 없음
-
     Format the user's situation using the STICC model to enhance the clarity and detail of the input for coaching purposes.
 
     Parameters:

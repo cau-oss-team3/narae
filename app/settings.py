@@ -55,7 +55,11 @@ class Settings(BaseSettings):
     database: Database
     alembic_script_location: str = os.path.join(base_dir, "migrations")
     alembic_ini: str = os.path.join(base_dir, "alembic.ini")
+
     gpt_key: str
+    gpt_model: str = "gpt-4o"
+    gpt_embedding_model: str = "text-embedding-3-small"
+
 
 
 def get_settings():
