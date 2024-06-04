@@ -1,5 +1,3 @@
-import asyncio
-import sys
 from fastapi.responses import RedirectResponse
 import uvicorn
 
