@@ -85,7 +85,7 @@ def get_recommended_action(
     existing_learning,
     learning_goal,
     abandon_reason,
-    recommend_action = Depends(get_recommend_action),
+    recommend_action=Depends(get_recommend_action),
     client: OpenAI = Depends(get_openai_client),
 ):
     """
@@ -110,11 +110,11 @@ def get_recommended_action(
         messages=[
             {
                 "role": "system",
-                "content": "You are a guide who suggests the next action which depends to the today's study direction. Your message is given to the user after the's study direction is given. Make sure your advice is specific enough to be actionable and at the right level of difficulty." + \
-                           "Also, make sure to motivate the user to keep going." + \
-                           "If the user completes the action, please provide feedback on how they completed it." + \
-                           "If the user abandons the action, ask for the reason and suggest the next recommended action based on the reason." + \
-                           f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease recommend an action that can be done according to today's learning direction."
+                "content": "You are a guide who suggests the next action which depends to the today's study direction. Your message is given to the user after the's study direction is given. Make sure your advice is specific enough to be actionable and at the right level of difficulty."
+                + "Also, make sure to motivate the user to keep going."
+                + "If the user completes the action, please provide feedback on how they completed it."
+                + "If the user abandons the action, ask for the reason and suggest the next recommended action based on the reason."
+                + f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease recommend an action that can be done according to today's learning direction.",
             },
             {
                 "role": "assistant",
@@ -143,14 +143,14 @@ def get_recommended_action(
         response_with_feedback = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                  {
-                     "role": "system",
-                     "content": feedback_prompt,
-                  },
-                  {
-                     "role": "user",
-                     "content": response_text,
-                  }
+                {
+                    "role": "system",
+                    "content": feedback_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": response_text,
+                },
             ],
             temperature=0.5,
             max_tokens=150,
@@ -170,13 +170,13 @@ def get_recommended_action(
             model=OPENAI_MODEL,
             messages=[
                 {
-                     "role": "system",
-                     "content": reason_prompt,
+                    "role": "system",
+                    "content": reason_prompt,
                 },
                 {
                     "role": "user",
                     "content": abandon_reason,
-                }
+                },
             ],
             temperature=0.75,
             max_tokens=150,
@@ -187,14 +187,14 @@ def get_recommended_action(
         next_action_response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                  {
-                     "role": "system",
-                     "content": next_action_prompt,
-                  },
-                  {
-                     "role": "user",
-                     "content": reason_response.choices[0].message.content.strip(),
-                  }
+                {
+                    "role": "system",
+                    "content": next_action_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": reason_response.choices[0].message.content.strip(),
+                },
             ],
             temperature=0.75,
             max_tokens=150,
