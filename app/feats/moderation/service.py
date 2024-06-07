@@ -4,8 +4,8 @@ import json
 import openai as OpenAI
 from app.feats.prompt.depends import get_openai_client
 
-# gpt 4o 로 변경해서 해보기
-OPENAI_MODEL = "gpt-3.5-turbo-1106"
+# 모델 변경 자유롭게.
+OPENAI_MODEL = "gpt-4o"
 
 moderation_tags = [
     "harassment",
@@ -22,7 +22,7 @@ moderation_tags = [
 ]
 
 
-def moderation_exist(user_input, client: OpenAI = Depends(get_openai_client)):
+def basic_moderation(user_input, client: OpenAI = Depends(get_openai_client)):
     response = client.moderations.create(input=user_input)
     moderation_output = response.model_dump()
 
@@ -35,12 +35,12 @@ def moderation_exist(user_input, client: OpenAI = Depends(get_openai_client)):
 
 
 # 프롬프트 추가한 업그레이드 버전
-def upgrade_moderation_exist(user_input, client: OpenAI = Depends(get_openai_client)):
-    if moderation_exist:
+def upgrade_moderation(user_input, client: OpenAI = Depends(get_openai_client)):
+    if basic_moderation:
         return True
     else:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=OPENAI_MODEL,
             messages=[
                 {
                     "role": "system",
@@ -53,13 +53,6 @@ def upgrade_moderation_exist(user_input, client: OpenAI = Depends(get_openai_cli
         temp = response.model_dump()
         moderation_output = temp["choices"][0]["message"]["content"]
         if moderation_output == "1":
-            print(moderation_output, type(moderation_output) + "\n\n")
             return True
         else:
             return False
-
-
-def get_statistic_moderation(user_input, client: OpenAI = Depends(get_openai_client)):
-    response = client.moderations.create(input=user_input)
-
-    return response
