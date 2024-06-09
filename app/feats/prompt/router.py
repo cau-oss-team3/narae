@@ -49,6 +49,7 @@ async def get_current_action(
     """
     현재 진행 중인 데일리 액션을 받아옵니다.
     """
+    # TODO: get mentor's current action from database
     return {"error": "Not implemented"}
 
 
@@ -62,6 +63,9 @@ async def set_new_action(
     """
     현재 진행 중인 새로 설정합니다.
     """
+    # TODO: check if mentor has current action
+    # TODO: check if daily action is valid using openai
+    # TODO: save new action to database(set new action as current action)
     return {"error": "Not implemented"}
 
 
@@ -75,6 +79,9 @@ async def complete_current_action_result(
     """
     현재 진행 중인 데일리 액션을 완료하고 결과를 저장하고 피드백을 반환합니다.
     """
+    # TODO: check if mentor has current action
+    # TODO: save action result to database
+    # TODO: get feedback from openai and return
     return {"error": "Not implemented"}
 
 
