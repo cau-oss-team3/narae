@@ -1,5 +1,3 @@
-from openai import OpenAI
-
 from app.feats.prompt.const import *
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
 from app.settings import settings

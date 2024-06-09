@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .depends import (
     get_openai_client,
 )
-from .models import *
+from .schemas import CurriculumRequest, ActionSuggestionRequest, QuestionRequest
 from .service import *
 from ..auth.models import User
 from ..auth.service import get_current_user
@@ -90,15 +90,3 @@ async def make_question(
     """
     mentor = await get_mentor2_by_id(request.mentor_id, current_user, db)
     return ask_question(client, mentor, request.question)
-
-
-# @router.post("/recommendation/")
-# def deprecated_get_daily_action(
-#         existing_learning,
-#         learning_goal,
-#         abandon_reason,
-#         recommend_action=Depends(get_prompt_of_daily_action),
-#         client: OpenAI = Depends(get_openai_client),
-# ):
-#     return legacy_action(abandon_reason, client, existing_learning, learning_goal, recommend_action)
-#
