@@ -129,6 +129,15 @@ def format_sticc_for_coaching(sticc: UserSituationRequest):
 
 
 """
+Global Constants
+"""
+
+prompt_always_korean = """
+Except for the Section titles, like <FIELD>, <RESULT>, <GIVEUP_FEEDBACK>, <GIVEUP_SUMMARY>, <ACTION>, <MOTIVATION>, etc.
+Please use Korean for all your responses.
+"""
+
+"""
 New Enhanced Prompt
 """
 
@@ -164,6 +173,12 @@ Present your recommended curriculum inside <CURRICULUM> tag like this:
 <CURRICULUM>
 [Your recommended curriculum]
 </CURRICULUM>
+
+Provide a sentence or two of motivation and encouragement for the user in its own <MOTIVATION> tag like this:
+Personalize it based on their specific situation and intent as described in the STICC if possible.
+<MOTIVATION>
+Provide a sentence or two of motivational encouragement for the user to keep learning and growing.
+</MOTIVATION>
 """
 
 # 2. Suggestions for Daily Action Prompt
@@ -359,9 +374,9 @@ Structure your output like this:
 [Your suggested new action]
 </ACTION>
 
-<Motivation>
+<MOTIVATION>
 [Additional motivation and encouragement to keep going]
-</Motivation>
+</MOTIVATION>
 </RESULT>
 """
 

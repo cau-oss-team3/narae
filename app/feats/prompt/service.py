@@ -1,134 +1,55 @@
 from openai import OpenAI
 
+from app.feats.prompt.const import *
+from app.feats.prompt.utils import extract_tagged_sections, inject_variables
 from app.settings import settings
 from app.feats.mentors.schemas import MentorDTO
-
 
 OPENAI_MODEL = settings.gpt_model
 OPENAI_EMBEDDING_MODEL = settings.gpt_embedding_model
 
-
-def get_study_direction(
-        study_direction,
-        client: OpenAI,
-        existing_learning="",
-        learning_goal="",
-):
-    response = client.chat.completions.create(
-        model=OPENAI_MODEL,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a guide who suggests the today's study direction and next short-term goal to the "
-                           "user. Your message is given to the user just before the study starts."
-                           "Make sure your advice is specific enough to be actionable and at the right level of "
-                           "difficulty."
-                           "Also, make sure to motivate the user to keep going."
-                           f"Existing learning content: {existing_learning}\n"
-                           f"Learning goal: {learning_goal}\n"
-                           f"Please provide detailed guidance for the next steps in learning, taking into account the "
-                           f"current knowledge and the desired learning outcome."
-                           "You should not exceed 200 words. Please say it in Korean. Thank you.",
-            },
-            {
-                "role": "assistant",
-                "content": existing_learning,
-            },
-            {
-                "role": "assistant",
-                "content": learning_goal,
-            },
-            {
-                "role": "user",
-                "content": study_direction.replace("\n", " "),
-            },
-        ],
-        temperature=0.75,
-        max_tokens=500,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0.75,
-    )
-    return response.choices[0].message.content
+"""
+Curriculum
+"""
 
 
-def get_qna_answer(
-        question,
-        mentor: MentorDTO,
-        client: OpenAI,
-):
-    response = client.chat.completions.create(
-        model=OPENAI_MODEL,
-        messages=[
-            {
-                "role": "system",
-                "content": f"You are a guide specializing in {mentor.mentor_field} "
-                           f"with the expertise of {mentor.mentor_sticc}. "
-                           "Your task is to suggest today's study direction and the next short-term goal to the user,"
-                           "tailoring your advice to the user’s current knowledge level in {mentor.mentor_field} and "
-                           "desired learning outcomes."
-                           "Your message is delivered just before the study session begins. "
-                           "Ensure your advice is specific, actionable, and motivating, encouraging the user to "
-                           "persist in their studies."
-                           f"Question: {question}\n"
-                           f"Please provide detailed guidance for the next steps in learning, taking into account the "
-                           f"current knowledge and the desired learning outcome."
-                           "You should not exceed 200 words and please provide the response in Korean.",
-            },
-            {
-                "role": "user",
-                "content": question.replace("\n", " "),
-            },
-        ],
-        temperature=0.75,
-        max_tokens=500,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0.75,
-    )
-    return response.choices[0].message.content
-
-
-def make_curriculum(client, existing_learning, learning_goal, prompt):
+def ask_curriculum(client, curriculum_request_dict):
+    formatted_prompt = inject_variables(prompt_curriculum, curriculum_request_dict)
     response = client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
             {
                 "role": "system",
-                "content": "You are a guide who suggests the today's study direction and next short-term goal to the "
-                           "user. Your message is given to the user just before the study starts."
-                           "Make sure your advice is specific enough to be actionable and at the right level of "
-                           "difficulty."
-                           "Also, make sure to motivate the user to keep going."
-                           f"Existing learning content: {existing_learning}\n"
-                           f"Learning goal: {learning_goal}\n"
-                           f"Please provide detailed guidance for the next steps in learning, taking into account the "
-                           f"current knowledge and the desired learning outcome."
-                           "please say it in Korean. Thank you.",
-            },
-            {
-                "role": "assistant",
-                "content": existing_learning,
-            },
-            {
-                "role": "assistant",
-                "content": learning_goal,
-            },
-            {
-                "role": "user",
-                "content": prompt.replace("\n", " "),
+                "content": formatted_prompt + prompt_always_korean
             },
         ],
         temperature=0.75,
-        max_tokens=100,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0.75,
     )
-    return response.choices[0].message.content
+    response_content = response.choices[0].message.content.strip()
+    return extract_tagged_sections(response_content)
 
 
-def make_action(abandon_reason, client, existing_learning, learning_goal, recommend_action):
+"""
+Action
+"""
+
+
+def ask_actions(client, mentor: MentorDTO, user_situation: str):
+    ...
+
+
+def accept_action(client, mentor: MentorDTO, user_situation: str):
+    ...
+
+
+def giveup_action(client, mentor: MentorDTO, user_situation: str):
+    ...
+
+
+def legacy_action(abandon_reason, client, existing_learning, learning_goal, recommend_action):
     response = client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
@@ -141,16 +62,9 @@ def make_action(abandon_reason, client, existing_learning, learning_goal, recomm
                            "If the user completes the action, please provide feedback on how they completed it."
                            "If the user abandons the action, ask for the reason and suggest the next recommended "
                            "action based on the reason."
-                           f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}"
+                           f"Existing learning content: {existing_learning}\n"
+                           f"Learning goal: {learning_goal}\n"
                            "Please recommend an action that can be done according to today's learning direction.",
-            },
-            {
-                "role": "assistant",
-                "content": existing_learning,
-            },
-            {
-                "role": "assistant",
-                "content": learning_goal,
             },
             {
                 "role": "user",
@@ -163,6 +77,7 @@ def make_action(abandon_reason, client, existing_learning, learning_goal, recomm
         frequency_penalty=0,
         presence_penalty=0.75,
     )
+
     # 사용자가 액션을 완료할 시 이에 대한 응답
     response_text = response.choices[0].message.content.strip()
     if "completed" in response_text.lower():
@@ -234,6 +149,11 @@ def make_action(abandon_reason, client, existing_learning, learning_goal, recomm
             f"\n\nNext recommended action: {next_action_response.choices[0].message.content.strip()}"
         )
     return response_text
+
+
+"""
+Question
+"""
 
 
 def ask_question(client, study_direction, user_question):

@@ -18,7 +18,7 @@ from app.feats.mentors.schemas import MentorDTO
 from app.feats.auth.models import User
 from app.feats.mentors.service import getMentor2ById
 from app.feats.prompt.depends import get_openai_client
-from app.feats.prompt.service import get_qna_answer
+from app.feats.prompt.service import ask_question
 from app.feats.chat.schemas import Chatting
 from app.feats.chat.service import create_chatting, get_chatHistoryList
 
@@ -73,7 +73,7 @@ async def websocket_endpoint(
         try:
             data = await websocket.receive_text()
             chat = ChatRequest.model_validate_json(data)
-            answer = get_qna_answer(chat.chat_data, mentor, client)
+            answer = ask_question(chat.chat_data, mentor, client)
             await manager.send_direct_message(
                 MentorChatResponse(seq=0, chat_data=answer).model_dump_json(), websocket
             )

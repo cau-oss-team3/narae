@@ -1,22 +1,28 @@
 from fastapi import APIRouter, Depends
 from openai import OpenAI
 
+from app.settings import settings
 from .depends import (
     get_openai_client,
 )
-from .const import (
-    get_prompt_of_curriculum,
-    get_prompt_of_daily_action,
-    get_prompt_of_qna,
-)
-from .service import make_curriculum, make_action, ask_question
+from .const import *
+from .models import CurriculumRequest
+from .service import ask_curriculum, legacy_action, ask_question
+from .utils import inject_variables, extract_tagged_sections
 
 
 router = APIRouter(prefix="/prompt", tags=["prompt"])
 
 
 @router.post("/curriculum/")
-def get_curriculum(
+def get_curriculum(request: CurriculumRequest, client: OpenAI = Depends(get_openai_client)):
+    try:
+        return ask_curriculum(client, request.to_dict())
+    except Exception as e:
+        return {"error": str(e)}
+
+@router.post("/curriculum2/")
+def get_curriculum_legacy(
         existing_learning="",
         learning_goal="",
         prompt=Depends(get_prompt_of_curriculum),
@@ -37,18 +43,18 @@ def get_curriculum(
      - existing_learning: 이전 학습 기록
      - learning_goal: 커리큘럼과 마일스톤
     """
-    return make_curriculum(client, existing_learning, learning_goal, prompt)
+    return ask_curriculum(client, existing_learning, learning_goal, prompt)
 
 
 @router.post("/recommendation/")
-def get_daliy_action(
+def get_daily_action(
         existing_learning,
         learning_goal,
         abandon_reason,
         recommend_action=Depends(get_prompt_of_daily_action),
         client: OpenAI = Depends(get_openai_client),
 ):
-    return make_action(abandon_reason, client, existing_learning, learning_goal, recommend_action)
+    return legacy_action(abandon_reason, client, existing_learning, learning_goal, recommend_action)
 
 
 @router.post("/question/")
