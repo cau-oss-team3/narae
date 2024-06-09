@@ -37,8 +37,30 @@ Action
 """
 
 
-def ask_actions(client, mentor: MentorDTO, user_situation: str):
-    ...
+def ask_actions(client, mentor: MentorDTO):
+    variables = {
+        "STICC": mentor.get_STICC_to_str(),
+        "FIELD": mentor.get_field_to_str(),
+        "CURRICULUM": mentor.get_curriculum(),
+        "PHASE": mentor.get_curr_phase(),
+    }
+    formatted_prompt = inject_variables(prompt_suggest_three_action, variables)
+
+    response = client.chat.completions.create(
+        model=settings.gpt_model,
+        messages=[
+            {
+                "role": "system",
+                "content": formatted_prompt + prompt_always_korean
+            },
+        ],
+        temperature=0.75,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.75,
+    )
+    response_content = response.choices[0].message.content.strip()
+    return extract_tagged_sections(response_content)
 
 
 def accept_action(client, mentor: MentorDTO, user_situation: str):

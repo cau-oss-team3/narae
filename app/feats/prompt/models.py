@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
@@ -22,6 +24,11 @@ class CurriculumRequest(BaseModel):
             "FIELD": self.field,
             "STICC": self.sticc
         }
+
+
+class ActionRecommendationRequest(BaseModel):
+    mentor_id: int
+    hint: Optional[str] = None
 
 
 class GPTResponse(BaseModel):

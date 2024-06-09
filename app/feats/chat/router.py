@@ -16,7 +16,7 @@ from app.feats.chat.schemas import (
 )
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.auth.models import User
-from app.feats.mentors.service import getMentor2ById
+from app.feats.mentors.service import get_mentor2_by_id
 from app.feats.prompt.depends import get_openai_client
 from app.feats.prompt.service import ask_question
 from app.feats.chat.schemas import Chatting
@@ -60,7 +60,7 @@ async def websocket_endpoint(
     await manager.connect(websocket)
 
     # get mentor info and answer
-    mentor: MentorDTO = await getMentor2ById(mentor_id, user, db)
+    mentor: MentorDTO = await get_mentor2_by_id(mentor_id, user, db)
     # direction: str = format_direction_for_study(mentor.mentor_field)
     # answer = get_study_direction(direction, client).choices[0].message.content.strip()
 

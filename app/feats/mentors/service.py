@@ -7,10 +7,10 @@ from app.feats.mentors.models import Mentor2
 from app.feats.mentors.schemas import MentorDTO
 
 
-async def getMentor2ById(
-    id: int,
-    current_user: User,
-    db: AsyncSession
+async def get_mentor2_by_id(
+        id: int,
+        current_user: User,
+        db: AsyncSession
 ):
     async with db:
         query = select(Mentor2).filter(Mentor2.id == id, Mentor2.user_id == current_user.id)
@@ -34,6 +34,8 @@ async def getMentor2ById(
         "mentor_name": found_mentor.mentor_name,
         "mentor_field": found_mentor.mentor_field,
         "mentor_sticc": sticc_form,
+        "curriculum": "" if found_mentor.curriculum is None else found_mentor.curriculum,
+        "curriculum_phase": "" if found_mentor.curriculum_phase is None else found_mentor.curriculum_phase,
     }
 
     return MentorDTO(**mentor_detail_form)
