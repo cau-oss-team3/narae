@@ -26,9 +26,14 @@ class CurriculumRequest(BaseModel):
         }
 
 
-class ActionRecommendationRequest(BaseModel):
+class ActionSuggestionRequest(BaseModel):
     mentor_id: int
     hint: Optional[str] = None
+
+
+class QuestionRequest(BaseModel):
+    mentor_id: int
+    question: str
 
 
 class GPTResponse(BaseModel):

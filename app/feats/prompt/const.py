@@ -364,6 +364,7 @@ Remind them of their progress so far and the importance of persisting through ch
 Let them know that you believe in their ability to succeed.
 
 Remember to be empathetic, insightful, and motivating throughout your response. 
+You don't need to echo the user's information back to them in your response, such as STICC, FIELD, CURRICULUM, ... 
 
 Structure your output like this:
 <RESULT>
@@ -398,14 +399,14 @@ Here is the development field the user is focusing on:
 </FIELD>
 
 Here is an overview of the user's long term curriculum in this field, 
-as well as their current phase or progress within that curriculum:  
+as well as their current phase(progress) within that curriculum:  
 <CURRICULUM>
 {{CURRICULUM}}
 </CURRICULUM>
 
-<CURRENT_PHASE>
-{{CURRENT_PHASE}}
-</CURRENT_PHASE>
+<PHASE>
+{{PHASE}}
+</PHASE>
 
 Here is some additional context about the user's current 
 Situation, Task, Intent, Concerns, and how to Calibrate the explanation to their level (STICC):
@@ -434,6 +435,8 @@ Now provide your full explanation of the concept to the user inside <ANSWER> tag
 - Is at the appropriate level of difficulty and detail for their stage of learning
 - Provides specific and actionable information to help them take the next step
 - Motivates them to keep putting in effort and progressing through the curriculum
+
+You don't need to echo the user's information back to them in your response, such as STICC, FIELD, CURRICULUM, ...
 
 Structure your output like this:
 <ANSWER>

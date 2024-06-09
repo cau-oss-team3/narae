@@ -71,6 +71,44 @@ def giveup_action(client, mentor: MentorDTO, user_situation: str):
     ...
 
 
+"""
+Question
+"""
+
+
+def ask_question(client, mentor: MentorDTO, user_question: str):
+    variables = {
+        "FIELD": mentor.get_field_to_str(),
+        "CURRICULUM": mentor.get_curriculum(),
+        "PHASE": mentor.get_curr_phase(),
+        "STICC": mentor.get_STICC_to_str(),
+        "QUESTION": user_question,
+    }
+    formatted_prompt = inject_variables(prompt_question, variables)
+    print(formatted_prompt)
+
+    response = client.chat.completions.create(
+        model=settings.gpt_model,
+        messages=[
+            {
+                "role": "system",
+                "content": formatted_prompt + prompt_always_korean
+            },
+        ],
+        temperature=0.5,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.5,
+    )
+    response_content = response.choices[0].message.content.strip()
+    return extract_tagged_sections(response_content)
+
+
+"""
+Will be deprecated
+"""
+
+
 def legacy_action(abandon_reason, client, existing_learning, learning_goal, recommend_action):
     response = client.chat.completions.create(
         model=settings.gpt_model,
@@ -171,35 +209,3 @@ def legacy_action(abandon_reason, client, existing_learning, learning_goal, reco
             f"\n\nNext recommended action: {next_action_response.choices[0].message.content.strip()}"
         )
     return response_text
-
-
-"""
-Question
-"""
-
-
-def ask_question(client, study_direction, user_question):
-    response = client.chat.completions.create(
-        model=settings.gpt_model,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a teacher who gives answer to the question which the user gives. Please provide "
-                           "an answer to the user's question about your areas of interest.",
-            },
-            {
-                "role": "user",
-                "content": user_question,
-            },
-            {
-                "role": "user",
-                "content": study_direction.replace("\n", " "),
-            },
-        ],
-        temperature=0.5,
-        max_tokens=150,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-    )
-    return response.choices[0].message.content.strip()
