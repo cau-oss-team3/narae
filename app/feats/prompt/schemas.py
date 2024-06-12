@@ -1,7 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
-from pydantic_core.core_schema import ValidationInfo
+from pydantic import BaseModel
 
 
 class UserSituationRequest(BaseModel):

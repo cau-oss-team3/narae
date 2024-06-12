@@ -1,8 +1,8 @@
+from app.feats.mentors.schemas import MentorDTO
 from app.feats.prompt.const import *
 from app.feats.prompt.schemas import CurriculumRequest
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
 from app.settings import settings
-from app.feats.mentors.schemas import MentorDTO
 
 OPENAI_MODEL = settings.gpt_model
 OPENAI_EMBEDDING_MODEL = settings.gpt_embedding_model

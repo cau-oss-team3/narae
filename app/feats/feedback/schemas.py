@@ -1,4 +1,5 @@
 from pydantic import BaseModel, field_validator, Field
+
 from app.core.exceptions import AuthenticationFailedException
 
 MIN_LENGTH = 1

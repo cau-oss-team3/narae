@@ -1,17 +1,18 @@
-import bcrypt
-from typing import Annotated
 from datetime import date, datetime, timedelta
+from typing import Annotated
+
+import bcrypt
 from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from jose import JWTError, jwt
 
 from app.core.database import get_async_session
-from app.feats.auth.schemas import TokenData
-from app.settings import settings
 from app.core.exceptions import AuthenticationFailedException
 from app.feats.auth.models import Limit, User
+from app.feats.auth.schemas import TokenData
+from app.settings import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 credentials_exception = AuthenticationFailedException(

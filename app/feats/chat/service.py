@@ -1,8 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.feats.chat.schemas import Chatting
 from app.feats.chat.models import ChatHistory
+from app.feats.chat.schemas import Chatting
 
 
 async def create_chatting(

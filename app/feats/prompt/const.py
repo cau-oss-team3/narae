@@ -1,7 +1,5 @@
 from enum import Enum
 
-from app.feats.prompt.schemas import UserSituationRequest
-
 
 class Field(int, Enum):
     BACKEND = 0

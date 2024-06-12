@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import AuthenticationFailedException
 from app.core.database import get_async_session
+from app.core.exceptions import AuthenticationFailedException
 from app.feats.auth.models import User
 from app.feats.auth.service import get_current_user
-
 from .models import Mentor2
 from .schemas import MentorDTO
 

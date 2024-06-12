@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_async_session
 from app.feats.auth.models import User
 from app.feats.auth.service import get_current_user
-
 from app.feats.feedback.schemas import FeedbackDTO
 from app.feats.feedback.service import create_feedback
 

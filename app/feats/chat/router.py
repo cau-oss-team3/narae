@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
 from app.core.websocket import WebsocketConnectionManager, get_websocket_manager
+from app.feats.auth.models import User
 from app.feats.auth.service import get_current_user
 from app.feats.chat.schemas import (
     ChatRequest,
@@ -14,14 +15,12 @@ from app.feats.chat.schemas import (
     MentorChatResponse,
     MentorInfoResponse,
 )
+from app.feats.chat.schemas import Chatting
+from app.feats.chat.service import create_chatting, get_chatHistoryList
 from app.feats.mentors.schemas import MentorDTO
-from app.feats.auth.models import User
 from app.feats.mentors.service import get_mentor2_by_id
 from app.feats.prompt.depends import get_openai_client
 from app.feats.prompt.service import ask_question
-from app.feats.chat.schemas import Chatting
-from app.feats.chat.service import create_chatting, get_chatHistoryList
-
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 

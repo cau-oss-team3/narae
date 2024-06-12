@@ -1,8 +1,9 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Header, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
 from app.feats.auth.models import User
@@ -21,7 +22,6 @@ from app.feats.auth.service import (
     login_user,
 )
 from app.settings import settings
-
 
 # {"token" : user.id} 으로 dict를 리스트 안에 넣음
 active_user = []
