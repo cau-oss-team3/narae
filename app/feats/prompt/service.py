@@ -1,4 +1,5 @@
 from app.feats.prompt.const import *
+from app.feats.prompt.schemas import CurriculumRequest
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
 from app.settings import settings
 from app.feats.mentors.schemas import MentorDTO
@@ -11,8 +12,16 @@ Curriculum
 """
 
 
-def ask_curriculum(client, curriculum_request_dict):
-    formatted_prompt = inject_variables(prompt_curriculum, curriculum_request_dict)
+def ask_curriculum(client,
+                   mentor: MentorDTO,
+                   curriculum_request: CurriculumRequest):
+    formatted_prompt = inject_variables(prompt_curriculum,
+                                        {
+                                            "FIELD": mentor.get_field_to_str(),
+                                            "STICC": mentor.get_STICC_to_str(),
+                                            "HINT": curriculum_request.hint,
+                                        })
+
     response = client.chat.completions.create(
         model=settings.gpt_model,
         messages=[

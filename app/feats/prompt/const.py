@@ -47,6 +47,12 @@ concerns, and calibration (STICC) in the {{STICC}} variable.
 {{STICC}}
 </STICC>
 
+Use this optional hint to guide your curriculum recommendation. ignore it if you don't need it or find it irrelevant.
+
+<HINT>
+{{HINT}}
+</HINT>
+
 ---
 
 Carefully analyze the STICC information, taking into account the user's current knowledge, their desired learning 
@@ -57,6 +63,8 @@ Consider the appropriate difficulty level, specificity of advice, and how to kee
 
 Make sure your advice is specific enough to be actionable, at the right level of difficulty for the user, 
 and includes encouragement to keep the user motivated in their learning journey.
+
+All output must be in markdown format. 
 
 Present your recommended curriculum inside <CURRICULUM> tag like this:
 <CURRICULUM>
@@ -115,6 +123,8 @@ Consider:
 
 You don't need to echo the user's STICC, FIELD, CURRICULUM, or PHASE information back to them in your response.
 
+All output must be in markdown format.
+
 Present your recommended daily actions to the user inside <ACTIONS> tags, 
 with each specific task enclosed in its own numbered <ACTION_#> tag like this:
 
@@ -171,6 +181,8 @@ The user has proposed the following action to take today:
 </ACTION>
 
 ---
+
+All output must be in markdown format. 
 
 <SCRATCHPAD>
 Analyze the proposed action:
@@ -255,6 +267,8 @@ Let them know that you believe in their ability to succeed.
 Remember to be empathetic, insightful, and motivating throughout your response. 
 You don't need to echo the user's information back to them in your response, such as STICC, FIELD, CURRICULUM, ... 
 
+All output must be in markdown format. 
+
 Structure your output like this:
 <RESULT>
 <GIVEUP_FEEDBACK>
@@ -326,6 +340,8 @@ Now provide your full explanation of the concept to the user inside <ANSWER> tag
 - Motivates them to keep putting in effort and progressing through the curriculum
 
 You don't need to echo the user's information back to them in your response, such as STICC, FIELD, CURRICULUM, ...
+
+All output must be in markdown format. 
 
 Structure your output like this:
 <ANSWER>

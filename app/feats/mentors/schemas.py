@@ -88,10 +88,10 @@ class STICC(BaseModel):
 
 class MentorDTO(BaseModel):
     mentor_name: str = Field(min_length=1, max_length=45)
-    mentor_field: int
+    mentor_field: int = Field(ge=0, le=2)
     mentor_sticc: STICC
-    curriculum: str
-    curriculum_phase: str
+    curriculum: str = ""
+    curriculum_phase: str = ""
 
     @field_validator("mentor_name", mode="before")
     @classmethod

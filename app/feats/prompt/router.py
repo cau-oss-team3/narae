@@ -1,11 +1,7 @@
-from fastapi import APIRouter, Depends
-from openai import OpenAI
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 
-from .depends import (
-    get_openai_client,
-)
-from .schemas import CurriculumRequest, ActionSuggestionRequest, QuestionRequest
+from .depends import *
+from .schemas import ActionSuggestionRequest, QuestionRequest
 from .service import *
 from ..auth.models import User
 from ..auth.service import get_current_user
@@ -16,19 +12,23 @@ router = APIRouter(prefix="/prompt", tags=["prompt"])
 
 
 @router.post("/curriculum/")
-async def make_curriculum(request: CurriculumRequest, client: OpenAI = Depends(get_openai_client)):
+async def make_curriculum(
+    request: CurriculumRequest,
+    mentor: MentorDTO = Depends(get_mentor_from_request),
+    client: OpenAI = Depends(get_openai_client)
+):
     try:
-        return ask_curriculum(client, request.to_dict())
+        return ask_curriculum(client, mentor, request)
     except Exception as e:
         return {"error": str(e)}
 
 
 @router.post("/action-suggestion/")
 async def make_action_suggestions(
-    request: ActionSuggestionRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
-    client: OpenAI = Depends(get_openai_client),
+        request: ActionSuggestionRequest,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
+        client: OpenAI = Depends(get_openai_client),
 ):
     """
     데일리 액션 추천을 3가지 받아옵니다.
@@ -41,10 +41,10 @@ async def make_action_suggestions(
 
 @router.get("/daily-action/")
 async def get_current_action(
-    # request: CurrentActionRequest,
-    # current_user: User = Depends(get_current_user),
-    # db: AsyncSession = Depends(get_async_session),
-    # client: OpenAI = Depends(get_openai_client),
+        # request: CurrentActionRequest,
+        # current_user: User = Depends(get_current_user),
+        # db: AsyncSession = Depends(get_async_session),
+        # client: OpenAI = Depends(get_openai_client),
 ):
     """
     현재 진행 중인 데일리 액션을 받아옵니다.
@@ -55,10 +55,10 @@ async def get_current_action(
 
 @router.post("/daily-action/")
 async def set_new_action(
-    # request: SetNewActionRequest,
-    # current_user: User = Depends(get_current_user),
-    # db: AsyncSession = Depends(get_async_session),
-    # client: OpenAI = Depends(get_openai_client),
+        # request: SetNewActionRequest,
+        # current_user: User = Depends(get_current_user),
+        # db: AsyncSession = Depends(get_async_session),
+        # client: OpenAI = Depends(get_openai_client),
 ):
     """
     현재 진행 중인 새로 설정합니다.
@@ -71,10 +71,10 @@ async def set_new_action(
 
 @router.patch("/daily-action/")
 async def complete_current_action_result(
-    # request: completeActionResultRequest,
-    # current_user: User = Depends(get_current_user),
-    # db: AsyncSession = Depends(get_async_session),
-    # client: OpenAI = Depends(get_openai_client),
+        # request: completeActionResultRequest,
+        # current_user: User = Depends(get_current_user),
+        # db: AsyncSession = Depends(get_async_session),
+        # client: OpenAI = Depends(get_openai_client),
 ):
     """
     현재 진행 중인 데일리 액션을 완료하고 결과를 저장하고 피드백을 반환합니다.
@@ -87,10 +87,10 @@ async def complete_current_action_result(
 
 @router.post("/question/")
 async def make_question(
-    request: QuestionRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
-    client: OpenAI = Depends(get_openai_client),
+        request: QuestionRequest,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
+        client: OpenAI = Depends(get_openai_client),
 ):
     """
     질문을 받아 답변을 생성합니다.

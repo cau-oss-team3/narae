@@ -15,15 +15,15 @@ router = APIRouter(prefix="/mentors2", tags=["mentors2"])
 
 # 멘토 생성
 @router.post("")
-async def createMentor(
+async def create_mentor(
     input_mentor_detail: MentorDTO,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    creater_id = current_user.id
+    creator_id = current_user.id
 
     async with db:
-        query = select(Mentor2).filter(creater_id == Mentor2.user_id)
+        query = select(Mentor2).filter(creator_id == Mentor2.user_id)
         result = await db.execute(query)
         found_mentor = result.scalars().all()
 
@@ -35,7 +35,7 @@ async def createMentor(
     new_mentor = Mentor2(
         mentor_name=input_mentor_detail.mentor_name,
         mentor_field=input_mentor_detail.mentor_field,
-        user_id=creater_id,
+        user_id=creator_id,
         situation=input_mentor_detail.mentor_sticc.situation,
         task=input_mentor_detail.mentor_sticc.task,
         intent=input_mentor_detail.mentor_sticc.intent,
@@ -53,7 +53,7 @@ async def createMentor(
 
 # 멘토 리스트 얻기 - getMentorList
 @router.get("")
-async def getMentorList(
+async def get_mentor_list(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
@@ -80,7 +80,7 @@ async def getMentorList(
 
 # 멘토 얻기 - getMentor
 @router.get("/{id}")
-async def getMentor(
+async def get_mentor(
     id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
@@ -121,7 +121,7 @@ async def getMentor(
 
 
 @router.put("/{id}")
-async def updateMentor(
+async def update_mentor(
     id: int,
     input_mentor_detail: MentorDTO,
     current_user: User = Depends(get_current_user),
@@ -174,7 +174,7 @@ async def updateMentor(
 
 
 @router.delete("/{id}")
-async def deleteMentor(
+async def delete_mentor(
     id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
