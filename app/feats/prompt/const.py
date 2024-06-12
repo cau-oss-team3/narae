@@ -21,7 +21,7 @@ Global Constants
 
 prompt_always_korean = """
 Except for the Section titles, like <FIELD>, <RESULT>, <GIVEUP_FEEDBACK>, <GIVEUP_SUMMARY>, <ACTION>, <MOTIVATION>, etc.
-Please use Korean for all your responses.
+Please use polite Korean language for all your responses. 
 """
 
 """
@@ -45,7 +45,7 @@ concerns, and calibration (STICC) in the {{STICC}} variable.
 {{STICC}}
 </STICC>
 
-Use this optional hint to guide your curriculum recommendation. ignore it if you don't need it or find it irrelevant.
+Use this optional hint to guide your curriculum recommendation. Ignore it if you don't need it or find it irrelevant.
 
 <HINT>
 {{HINT}}
@@ -100,6 +100,12 @@ They are currently at this phase in the curriculum:
 <PHASE>
 {{PHASE}}
 </PHASE>
+
+Use this optional hint to guide your curriculum recommendation. Ignore it if you don't need it or find it irrelevant.
+
+<HINT>
+{{HINT}}
+</HINT>
 
 ---
 

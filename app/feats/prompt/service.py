@@ -14,13 +14,14 @@ Curriculum
 
 def ask_curriculum(client,
                    mentor: MentorDTO,
-                   curriculum_request: CurriculumRequest):
-    formatted_prompt = inject_variables(prompt_curriculum,
-                                        {
-                                            "FIELD": mentor.get_field_to_str(),
-                                            "STICC": mentor.get_STICC_to_str(),
-                                            "HINT": curriculum_request.hint,
-                                        })
+                   curriculum_request: CurriculumRequest
+                   ):
+    variables = {
+        "FIELD": mentor.get_field_to_str(),
+        "STICC": mentor.get_STICC_to_str(),
+        "HINT": curriculum_request.hint,
+    }
+    formatted_prompt = inject_variables(prompt_curriculum, variables)
 
     response = client.chat.completions.create(
         model=settings.gpt_model,
@@ -44,7 +45,7 @@ Action
 """
 
 
-def ask_actions(client, mentor: MentorDTO):
+def ask_actions(client, mentor: MentorDTO, hint: str):
     variables = {
         "STICC": mentor.get_STICC_to_str(),
         "FIELD": mentor.get_field_to_str(),
@@ -92,8 +93,6 @@ def ask_question(client, mentor: MentorDTO, user_question: str):
         "QUESTION": user_question,
     }
     formatted_prompt = inject_variables(prompt_question, variables)
-    print(formatted_prompt)
-
     response = client.chat.completions.create(
         model=settings.gpt_model,
         messages=[

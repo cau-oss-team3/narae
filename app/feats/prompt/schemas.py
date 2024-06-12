@@ -14,17 +14,23 @@ class UserSituationRequest(BaseModel):
 
 
 class CurriculumRequest(BaseModel):
-    mentor_id: int
     hint: Optional[str] = ''
 
 
-class ActionSuggestionRequest(BaseModel):
-    mentor_id: int
+class ActionSuggestRequest(BaseModel):
     hint: Optional[str] = None
 
 
+class SetNewActionRequest(BaseModel):
+    action: str
+
+
+class CompleteActionResultRequest(BaseModel):
+    result: str
+    reason: str = ''
+
+
 class QuestionRequest(BaseModel):
-    mentor_id: int
     question: str
 
 
