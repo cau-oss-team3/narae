@@ -1,8 +1,8 @@
 """Update mentor v2 to support curriculum and action
 
-Revision ID: 7a03906ae6d7
+Revision ID: 4d933745539b
 Revises: 0079f91f0887
-Create Date: 2024-06-10 05:11:55.284687
+Create Date: 2024-06-13 00:39:50.538105
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7a03906ae6d7'
+revision: str = '4d933745539b'
 down_revision: Union[str, None] = '0079f91f0887'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table('Action',
     sa.Column('mentor_id', sa.Integer(), nullable=False),
     sa.Column('action', sa.Text(), nullable=False),
-    sa.Column('is_active', sa.Integer(), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.BigInteger(), nullable=False),
     sa.Column('updated_at', sa.BigInteger(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),

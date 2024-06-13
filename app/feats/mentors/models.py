@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, String, Integer, Text, BigInteger
+from sqlalchemy import Column, ForeignKey, String, Integer, Text, BigInteger, Boolean
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -32,7 +32,7 @@ class Action(Base):
     mentor = relationship("Mentor2", back_populates="actions")
 
     action = Column(Text, nullable=False)
-    is_active = Column(Integer, nullable=False)
+    is_active = Column(Boolean, nullable=False)
 
     created_at = Column(
         BigInteger,

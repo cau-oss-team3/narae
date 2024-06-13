@@ -88,6 +88,7 @@ class STICC(BaseModel):
 
 
 class MentorDTO(BaseModel):
+    mentor_id: int
     mentor_name: str = Field(min_length=1, max_length=45)
     mentor_field: int = Field(ge=0, le=2)
     mentor_sticc: STICC
