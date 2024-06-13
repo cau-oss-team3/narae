@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketException, status
@@ -22,7 +23,7 @@ from app.feats.prompt.depends import get_openai_client, get_mentor_from_path_var
 from app.feats.prompt.service import ask_question
 
 router = APIRouter(prefix="/chat", tags=["chat"])
-
+logger = logging.getLogger("websocket")
 
 async def get_token(
     token: Annotated[str | None, Query()] = None,
@@ -89,20 +90,38 @@ async def websocket_endpoint(
     await manager.send_direct_message(
         MentorInfoResponse(seq=0).model_dump_json(), websocket
     )
-    seq += 1
-
     while True:
         try:
+            # get user chat
             data = await websocket.receive_text()
             chat = ChatRequest.model_validate_json(data)
-            answer = ask_question(client, mentor, chat.chat_data)
+
+            # make mentor chat
+            answer = ask_question(client, mentor, chat.chat_data).get("ANSWER", "죄송합니다. 다시 질문해주세요.")
+            answer_data = MentorChatResponse(seq=0, chat_data=answer)
+
+            # save chat history
+            user_chat_history = await create_chatting(chat.to_chat_history(), user.id, mentor_id, db)
+            print("answer_data", answer_data.to_chat_history())
+            mentor_chat_history = await create_chatting(answer_data.to_chat_history(), user.id, mentor_id, db)
+
+            print(mentor_chat_history.seq, mentor_chat_history.chat_data)
+            # send mentor chat
             await manager.send_direct_message(
-                MentorChatResponse(seq=0, chat_data=answer).model_dump_json(), websocket
+                MentorChatResponse(seq=mentor_chat_history.seq, chat_data=answer).model_dump_json(), websocket
             )
-            seq += 1
         except ValueError as e:
             await manager.send_direct_message(
                 ChatResponseFail(err=f"Invalid JSON format: {e}").model_dump_json(),
                 websocket,
             )
-
+        # except Exception as e:
+        #     logger.error(f"Unexpected error: {e}")
+        #     await manager.send_direct_message(
+        #         MentorChatResponse(seq=0, chat_data="죄송합니다. 대답할 수 없는 질문입니다. 다르게 질문해주세요. :)").model_dump_json(), websocket
+        #     )
+        #     await manager.send_direct_message(
+        #         ChatResponseFail(err=f"Unexpected error: {e}").model_dump_json(),
+        #         websocket,
+        #     )
+        #     break

@@ -26,23 +26,14 @@ class ChatRequest(BaseModel):
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
 
-
-class MentorChatResponse(BaseModel):
-    """
-    seq: 2,
-    chat_type: 1,
-    chat_data: "멘토 발화 테스트 1",
-    candidates: [],
-    timestamp: new Date().getTime(),
-    visibility: true,
-    """
-
-    seq: int = 0
-    chat_type: int = 1
-    chat_data: str = ""
-    candidates: list[str] = []
-    timestamp: int = int(datetime.now().timestamp() * 1000)
-    visibility: bool = True
+    def to_chat_history(self):
+        return Chatting(
+            seq=self.seq,
+            chat_type=self.chat_type,
+            chat_data=self.chat_data,
+            timestamp=self.timestamp,
+            visibility=self.visibility,
+        )
 
 
 class MentorInfoResponse(BaseModel):
@@ -79,6 +70,15 @@ class MentorChatResponse(BaseModel):
     candidates: list[str] = []
     timestamp: int = int(datetime.now().timestamp() * 1000)
     visibility: bool = True
+
+    def to_chat_history(self):
+        return Chatting(
+            seq=self.seq,
+            chat_type=self.chat_type,
+            chat_data=self.chat_data,
+            timestamp=self.timestamp,
+            visibility=self.visibility,
+        )
 
 
 class ChatResponseFail(BaseModel):

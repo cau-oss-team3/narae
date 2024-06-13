@@ -23,19 +23,12 @@ async def create_chatting(
     )
 
     db.add(new_chat)
+    await db.flush()
     await db.commit()
     await db.refresh(new_chat)
 
-    # get the new chat's id
-    query = select(ChatHistory).filter(
-        (user_id == ChatHistory.user_id) & (mentor_id == ChatHistory.mentor_id)
-    ).order_by(ChatHistory.id.desc()).limit(1)
-    result = await db.execute(query)
-    found_chat = result.scalars().first()
-    found_chat.seq = found_chat.id
-    del found_chat.id
-
-    return found_chat
+    new_chat.seq = new_chat.id
+    return new_chat
 
 
 async def get_chat_history_list(
