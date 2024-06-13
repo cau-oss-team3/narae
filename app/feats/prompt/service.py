@@ -1,6 +1,9 @@
+from openai import OpenAI
+
 from app.feats.mentors.schemas import MentorDTO
-from app.feats.mentors.service import retrieve_current_action, update_current_action_result, insert_new_action, \
+from app.feats.mentors.service import update_current_action_result, insert_new_action, \
     update_curriculum, update_complete_current_action, update_curriculum_phase, update_giveup_current_action
+from app.feats.moderation.service import check_moderation_violation
 from app.feats.prompt.const import *
 from app.feats.prompt.schemas import CurriculumRequest
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
@@ -14,10 +17,13 @@ Curriculum
 """
 
 
-def ask_curriculum(client,
+def ask_curriculum(client: OpenAI,
                    mentor: MentorDTO,
                    curriculum_request: CurriculumRequest
                    ):
+    if check_moderation_violation(curriculum_request.hint, client):
+        raise Exception("Your input contains inappropriate content. Please try again.")
+
     variables = {
         "FIELD": mentor.get_field_to_str(),
         "STICC": mentor.get_STICC_to_str(),
@@ -44,6 +50,7 @@ def ask_curriculum(client,
 
 async def save_curriculum(db, mentor: MentorDTO, curriculum: str):
     return await update_curriculum(db, mentor.mentor_id, curriculum)
+
 
 """
 Action
@@ -82,6 +89,9 @@ async def make_current_action(client, db, mentor: MentorDTO, action: str):
 
 
 async def complete_action(client, db, mentor: MentorDTO, action: str, comment: str):
+    if check_moderation_violation(comment, client):
+        raise Exception("다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
+
     variables = {
         "CURRICULUM": mentor.get_curriculum(),
         "PHASE": mentor.get_curr_phase(),
@@ -123,6 +133,9 @@ async def complete_action(client, db, mentor: MentorDTO, action: str, comment: s
 
 
 async def giveup_action(client, db, mentor: MentorDTO, action: str, comment: str):
+    if check_moderation_violation(comment, client):
+        raise Exception("다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
+
     variables = {
         "FIELD": mentor.get_field_to_str(),
         "CURRICULUM": mentor.get_curriculum(),
@@ -169,6 +182,9 @@ Question
 
 
 def ask_question(client, mentor: MentorDTO, user_question: str):
+    if check_moderation_violation(user_question, client):
+        raise Exception("다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
+
     variables = {
         "FIELD": mentor.get_field_to_str(),
         "CURRICULUM": mentor.get_curriculum(),
@@ -192,110 +208,3 @@ def ask_question(client, mentor: MentorDTO, user_question: str):
     )
     response_content = response.choices[0].message.content.strip()
     return extract_tagged_sections(response_content)
-
-
-"""
-Will be deprecated
-"""
-
-
-def legacy_action(abandon_reason, client, existing_learning, learning_goal, recommend_action):
-    response = client.chat.completions.create(
-        model=settings.gpt_model,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a guide who suggests the next action which depends to the today's study "
-                           "direction. Your message is given to the user after the's study direction is given. Make "
-                           "sure your advice is specific enough to be actionable and at the right level of difficulty."
-                           "Also, make sure to motivate the user to keep going."
-                           "If the user completes the action, please provide feedback on how they completed it."
-                           "If the user abandons the action, ask for the reason and suggest the next recommended "
-                           "action based on the reason."
-                           f"Existing learning content: {existing_learning}\n"
-                           f"Learning goal: {learning_goal}\n"
-                           "Please recommend an action that can be done according to today's learning direction.",
-            },
-            {
-                "role": "user",
-                "content": recommend_action.replace("\n", " "),
-            },
-        ],
-        temperature=0.75,
-        max_tokens=150,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0.75,
-    )
-
-    # 사용자가 액션을 완료할 시 이에 대한 응답
-    response_text = response.choices[0].message.content.strip()
-    if "completed" in response_text.lower():
-        feedback_prompt = "Please provide feedback on how you completed the action."
-        response_with_feedback = client.chat.completions.create(
-            model=settings.gpt_model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": feedback_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": response_text,
-                },
-            ],
-            temperature=0.5,
-            max_tokens=150,
-            frequency_penalty=0,
-            presence_penalty=0,
-        )
-        response_text += (
-                "\n\nFeedback: " + response_with_feedback.choices[0].message.content.strip()
-        )
-
-    # 사용자가 액션을 포기할 시 이에 대한 응답
-    elif "abandoned" in response_text.lower():
-        reason_prompt = "Please specify the reason for abandoning the action."
-        next_action_prompt = "Based on your reason for abandoning the action, here's the next recommended action."
-
-        reason_response = client.chat.completions.create(
-            model=settings.gpt_model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": reason_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": abandon_reason,
-                },
-            ],
-            temperature=0.75,
-            max_tokens=150,
-            frequency_penalty=0,
-            presence_penalty=0,
-        )
-
-        next_action_response = client.chat.completions.create(
-            model=settings.gpt_model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": next_action_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": reason_response.choices[0].message.content.strip(),
-                },
-            ],
-            temperature=0.75,
-            max_tokens=150,
-            frequency_penalty=0,
-            presence_penalty=0,
-        )
-
-        response_text += (
-            f"\n\nReason for abandoning: {reason_response.choices[0].message.content.strip()}"
-            f"\n\nNext recommended action: {next_action_response.choices[0].message.content.strip()}"
-        )
-    return response_text

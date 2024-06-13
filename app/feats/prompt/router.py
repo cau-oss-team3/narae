@@ -36,7 +36,7 @@ async def get_curriculum(
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
 ):
     """
-    멘토의 curriculum을 반환합니다.
+    멘토의 curriculum 반환합니다.
     """
     return {
         "CURRICULUM": mentor.curriculum,
