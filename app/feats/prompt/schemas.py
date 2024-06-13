@@ -21,7 +21,7 @@ class ActionSuggestRequest(BaseModel):
     hint: Optional[str] = None
 
 
-class SetNewActionRequest(BaseModel):
+class CreateCurrentActionRequest(BaseModel):
     action: str
 
 

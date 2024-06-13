@@ -56,9 +56,9 @@ async def get_mentor_list(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    creater_id = current_user.id
+    creator_id = current_user.id
     async with db:
-        query = select(Mentor2).filter(creater_id == Mentor2.user_id)
+        query = select(Mentor2).filter(creator_id == Mentor2.user_id)
         result = await db.execute(query)
         found_mentor = result.scalars().all()
 
@@ -84,7 +84,7 @@ async def get_mentor(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    async with db: #
+    async with db:
         query = select(Mentor2).filter(Mentor2.id == id, Mentor2.user_id == current_user.id)
 
         result = await db.execute(query)
@@ -104,6 +104,7 @@ async def get_mentor(
         "calibrate": found_mentor.calibrate,
     }
     mentor_detail_form = {
+        "mentor_id": found_mentor.id,
         "mentor_name": found_mentor.mentor_name,
         "mentor_field": found_mentor.mentor_field,
         "mentor_sticc": sticc_form,

@@ -64,11 +64,11 @@ async def get_actions(
         mentor_id: int,
         db: AsyncSession = Depends(get_async_session),
 ):
-    return retrieve_all_actions(mentor_id, db)
+    return retrieve_all_actions(db, mentor_id)
 
 
 async def get_current_action(
         mentor_id: int,
         db: AsyncSession = Depends(get_async_session),
 ):
-    return retrieve_current_action(mentor_id, db)
+    return retrieve_current_action(db, mentor_id)

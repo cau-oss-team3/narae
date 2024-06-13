@@ -32,7 +32,8 @@ class Action(Base):
     mentor = relationship("Mentor2", back_populates="actions")
 
     action = Column(Text, nullable=False)
-    is_active = Column(Boolean, nullable=False)
+    feedback = Column(Text, nullable=False, default="")
+    is_active = Column(Boolean, nullable=False, default=False)
     is_done = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(

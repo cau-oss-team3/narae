@@ -43,8 +43,8 @@ async def get_mentor2_by_id(
 
 
 async def retrieve_all_actions(
+        db: AsyncSession,
         mentor_id: int,
-        db: AsyncSession
 ):
     async with db:
         query = select(Action).filter(Action.mentor_id == mentor_id)
@@ -75,8 +75,8 @@ async def retrieve_completed_actions(
 
 
 async def retrieve_current_action(
-        mentor_id: int,
         db: AsyncSession,
+        mentor_id: int,
 ):
     async with db:
         query = select(Action).filter(Action.mentor_id == mentor_id, Action.is_active == True)
@@ -89,22 +89,19 @@ async def retrieve_current_action(
     return current_action
 
 
-async def set_new_action(
-        mentor_id: int,
+async def insert_new_action(
         db: AsyncSession,
+        mentor_id: int,
         action: str,
+        feedback: str = "",
+        is_done: bool = False,
+        is_active: bool = True,
 ):
+    """
+    Insert new action to database
+    """
     async with db:
-        query = select(Action).filter(Action.mentor_id == mentor_id, Action.is_active == True)
-        result = await db.execute(query)
-        current_action = result.scalar()
-
-        if current_action is not None:
-            current_action.is_active = False
-            current_action.result = "다른 액션을 진행하기 위해 비활성화됐습니다."
-            db.add(current_action)
-
-        new_action = Action(mentor_id=mentor_id, action=action, is_active=True)
+        new_action = Action(mentor_id=mentor_id, action=action, feedback=feedback, is_done=is_done, is_active=is_active)
         db.add(new_action)
         await db.commit()
         await db.refresh(new_action)
@@ -112,26 +109,39 @@ async def set_new_action(
     return new_action
 
 
-async def complete_current_action_result(
-        mentor_id: int,
+async def update_current_action_result(
         db: AsyncSession,
-        result: str,
+        mentor_id: int,
+        feedback: str = "",
+        is_done: bool = False,
+        is_active: bool = False,
 ):
     """
-    Complete current action and save result
+    Update current action result
     """
     async with db:
-        # Make existing action inactive
         query = select(Action).filter(Action.mentor_id == mentor_id, Action.is_active == True)
-        result = await db.execute(query)
-        current_action = result.scalar()
+        query_result = await db.execute(query)
+        current_action = query_result.scalar()
         if current_action is None:
             return None
 
-        current_action.is_active = False
-        current_action.result = result
+        # Update current action
+        current_action.is_active = is_active
+        current_action.is_done = is_done
+        current_action.feedback = feedback
         db.add(current_action)
         await db.commit()
         await db.refresh(current_action)
 
     return current_action
+
+
+async def giveup_current_action(
+        db: AsyncSession,
+        mentor_id: int,
+):
+    """
+    Give up current action
+    """
+    return update_current_action_result(db, mentor_id, result="Give up", is_done=False, is_active=False)

@@ -32,7 +32,7 @@ async def make_action_suggestions(
     """
     멘토의 action suggestion을 3개 생성합니다.
     """
-    return ask_actions(client, mentor, request.hint)
+    return suggest_actions(client, mentor, request.hint)
 
 
 @router.get("/{mentor_id}/daily-actions")
@@ -62,14 +62,14 @@ async def get_current_action(
 @router.post("/{mentor_id}/daily-actions/current")
 async def create_current_action(
         mentor_id: int,
-        request: SetNewActionRequest,
-        # actions=Depends(get_current_action),
-        # client: OpenAI = Depends(get_openai_client),
+        request: CreateCurrentActionRequest,
+        client: OpenAI = Depends(get_openai_client),
 ):
     """
     현재 진행 중인 새로운 데일리 액션을 설정합니다.
     만약 현재 진행 중인 액션이 있다면 비활성화합니다.
     """
+    # TODO: check if mentor has current action
 
     # TODO: save new action to database(set new action as current action)
 
