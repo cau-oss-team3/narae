@@ -1,5 +1,6 @@
 from app.feats.mentors.schemas import MentorDTO
-from app.feats.mentors.service import retrieve_current_action, update_current_action_result, insert_new_action
+from app.feats.mentors.service import retrieve_current_action, update_current_action_result, insert_new_action, \
+    update_curriculum
 from app.feats.prompt.const import *
 from app.feats.prompt.schemas import CurriculumRequest
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
@@ -41,6 +42,9 @@ def ask_curriculum(client,
     return extract_tagged_sections(response_content)
 
 
+async def save_curriculum(db, mentor: MentorDTO, curriculum: str):
+    return await update_curriculum(db, mentor.mentor_id, curriculum)
+
 """
 Action
 """
@@ -72,9 +76,9 @@ def suggest_actions(client, mentor: MentorDTO, hint: str):
     return extract_tagged_sections(response_content)
 
 
-async def create_current_action(client, db, mentor: MentorDTO, action: str):
+async def make_current_action(client, db, mentor: MentorDTO, action: str):
     await update_current_action_result(db, mentor.mentor_id, is_active=False, is_done=False)
-    return insert_new_action(db, mentor.mentor_id, action, is_active=True, is_done=False)
+    return await insert_new_action(db, mentor.mentor_id, action, is_active=True, is_done=False)
 
 
 async def complete_action(client, db, mentor: MentorDTO, action: str, comment: str):

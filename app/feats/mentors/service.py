@@ -42,6 +42,27 @@ async def get_mentor2_by_id(
     return MentorDTO(**mentor_detail_form)
 
 
+async def update_curriculum(
+        db: AsyncSession,
+        mentor_id: int,
+        curriculum: str,
+):
+    async with db:
+        query = select(Mentor2).filter(Mentor2.id == mentor_id)
+        result = await db.execute(query)
+        mentor = result.scalar()
+
+        if mentor is None:
+            return None
+
+        mentor.curriculum = curriculum
+        db.add(mentor)
+        await db.commit()
+        await db.refresh(mentor)
+
+    return mentor
+
+
 async def retrieve_all_actions(
         db: AsyncSession,
         mentor_id: int,

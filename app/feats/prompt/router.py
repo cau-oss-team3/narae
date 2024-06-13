@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from openai import OpenAI
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .depends import get_mentor_from_path_variable, get_openai_client, get_actions, get_current_action
 from .schemas import *
 from .service import *
 from ..mentors.schemas import ActionStatus
+from ...core.database import get_async_session
 
 router = APIRouter(prefix="/prompt", tags=["prompt"])
 
@@ -13,15 +15,32 @@ router = APIRouter(prefix="/prompt", tags=["prompt"])
 async def make_curriculum(
         request: CurriculumRequest,
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        db: AsyncSession = Depends(get_async_session),
         client: OpenAI = Depends(get_openai_client)
 ):
     """
     멘토의 curriculum을 생성합니다.
     """
     try:
-        return ask_curriculum(client, mentor, request)
+        response = ask_curriculum(client, mentor, request)
+        curriculum = response.get("CURRICULUM", "")
+        await save_curriculum(db, mentor, curriculum)
+
+        return response
     except Exception as e:
         return {"error": str(e)}
+
+@router.get("/{mentor_id}/curriculum")
+async def get_curriculum(
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+):
+    """
+    멘토의 curriculum을 반환합니다.
+    """
+    return {
+        "CURRICULUM": mentor.curriculum,
+        "PHASE": mentor.curriculum_phase
+    }
 
 
 @router.post("/{mentor_id}/action-suggestion")
@@ -68,19 +87,12 @@ async def get_current_action(
 
 @router.post("/{mentor_id}/daily-actions/current")
 async def create_current_action(
-        mentor_id: int,
         request: CreateCurrentActionRequest,
+        db: AsyncSession = Depends(get_async_session),
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
         client: OpenAI = Depends(get_openai_client),
 ):
-    """
-    현재 진행 중인 새로운 데일리 액션을 설정합니다.
-    만약 현재 진행 중인 액션이 있다면 비활성화합니다.
-    """
-    # TODO: check if mentor has current action
-
-    # TODO: save new action to database(set new action as current action)
-
-    return {"error": "Not implemented"}
+    return await make_current_action(client, db, mentor, request.action)
 
 
 @router.patch("/{mentor_id}/daily-action/current")
