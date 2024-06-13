@@ -4,6 +4,7 @@ from openai import OpenAI
 from .depends import get_mentor_from_path_variable, get_openai_client, get_actions, get_current_action
 from .schemas import *
 from .service import *
+from ..mentors.schemas import ActionStatus
 
 router = APIRouter(prefix="/prompt", tags=["prompt"])
 
@@ -38,14 +39,20 @@ async def make_action_suggestions(
 @router.get("/{mentor_id}/daily-actions")
 async def get_all_actions(
         actions=Depends(get_actions),
-        completed: Optional[bool] = Query(None, description="Filter actions by completion status"),
+        action_status: ActionStatus = Query(ActionStatus.all, description="completed status")
 ):
     """
     모든 데일리 액션을 반환합니다.
     """
-    if completed is not None:
-        return [action for action in actions if action.is_active == completed]
-    return await actions
+    actions = await actions
+    if action_status == ActionStatus.done:
+        filtered_actions = [action for action in actions if not action.is_active]
+    elif action_status == ActionStatus.current:
+        filtered_actions = [action for action in actions if action.is_active]
+    else:
+        filtered_actions = actions
+
+    return filtered_actions
 
 
 @router.get("/{mentor_id}/daily-actions/current")

@@ -1,9 +1,18 @@
+from enum import Enum
+
 from pydantic import field_validator, BaseModel, Field
 
 from app.core.exceptions import AuthenticationFailedException
 
 MIN_LENGTH = 1
 MAX_LENGTH = 256
+
+
+# make EnumActionStatus in Enum - completed, not_completed, all
+class ActionStatus(str, Enum):
+    all = "all"
+    done = "done"
+    current = "current"
 
 
 class STICC(BaseModel):
