@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from openai import OpenAI
 
 from app.feats.mentors.schemas import MentorDTO
@@ -22,7 +23,7 @@ def ask_curriculum(client: OpenAI,
                    curriculum_request: CurriculumRequest
                    ):
     if check_moderation_violation(curriculum_request.hint, client):
-        raise Exception("Your input contains inappropriate content. Please try again.")
+        raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
         "FIELD": mentor.get_field_to_str(),
@@ -90,7 +91,7 @@ async def make_current_action(client, db, mentor: MentorDTO, action: str):
 
 async def complete_action(client, db, mentor: MentorDTO, action: str, comment: str):
     if check_moderation_violation(comment, client):
-        raise Exception("다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
+        raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
         "CURRICULUM": mentor.get_curriculum(),
@@ -134,7 +135,7 @@ async def complete_action(client, db, mentor: MentorDTO, action: str, comment: s
 
 async def giveup_action(client, db, mentor: MentorDTO, action: str, comment: str):
     if check_moderation_violation(comment, client):
-        raise Exception("다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
+        raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
         "FIELD": mentor.get_field_to_str(),
@@ -183,7 +184,7 @@ Question
 
 def ask_question(client, mentor: MentorDTO, user_question: str):
     if check_moderation_violation(user_question, client):
-        raise Exception("다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
+        raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
         "FIELD": mentor.get_field_to_str(),
