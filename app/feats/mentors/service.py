@@ -111,16 +111,20 @@ async def set_new_action(
 
     return new_action
 
+
 async def complete_current_action_result(
         mentor_id: int,
         db: AsyncSession,
         result: str,
 ):
+    """
+    Complete current action and save result
+    """
     async with db:
+        # Make existing action inactive
         query = select(Action).filter(Action.mentor_id == mentor_id, Action.is_active == True)
         result = await db.execute(query)
         current_action = result.scalar()
-
         if current_action is None:
             return None
 

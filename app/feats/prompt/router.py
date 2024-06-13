@@ -59,11 +59,11 @@ async def get_current_action(
     return await action
 
 
-@router.post("/{mentor_id}/daily-action")
-async def set_new_action(
+@router.post("/{mentor_id}/daily-actions/current")
+async def create_current_action(
         mentor_id: int,
         request: SetNewActionRequest,
-        actions=Depends(get_current_action)
+        # actions=Depends(get_current_action),
         # client: OpenAI = Depends(get_openai_client),
 ):
     """
@@ -76,8 +76,25 @@ async def set_new_action(
     return {"error": "Not implemented"}
 
 
-@router.patch("/{mentor_id}/daily-action")
+@router.patch("/{mentor_id}/daily-action/current")
 async def complete_current_action_result(
+        mentor_id: int,
+        request: CompleteActionResultRequest,
+        # current_user: User = Depends(get_current_user),
+        # db: AsyncSession = Depends(get_async_session),
+        # client: OpenAI = Depends(get_openai_client),
+):
+    """
+    현재 진행 중인 데일리 액션을 완료하고 결과를 저장하고 피드백을 반환합니다.
+    """
+    # TODO: check if mentor has current action
+    # TODO: save action result to database
+    # TODO: get feedback from openai and return
+    return {"error": "Not implemented"}
+
+
+@router.patch("/{mentor_id}/daily-action/current")
+async def giveup_current_action_result(
         mentor_id: int,
         request: CompleteActionResultRequest,
         # current_user: User = Depends(get_current_user),

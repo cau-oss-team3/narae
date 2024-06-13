@@ -33,6 +33,7 @@ class Action(Base):
 
     action = Column(Text, nullable=False)
     is_active = Column(Boolean, nullable=False)
+    is_done = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(
         BigInteger,
