@@ -21,7 +21,7 @@ Global Constants
 
 prompt_always_korean = """
 Except for the Section titles, like <FIELD>, <RESULT>, <GIVEUP_FEEDBACK>, <GIVEUP_SUMMARY>, <ACTION>, <MOTIVATION>, etc.
-Please use polite Korean language for all your responses. 
+You must use polite Korean language for all your responses. Should use "입니다", "합니다", "입니다", "주세요", "세요", etc.
 """
 
 """
@@ -202,6 +202,7 @@ Offer insights, suggestions, and encouragement to help them progress in their le
 
 Next, update the user's curriculum phase to reflect their completion of the action. 
 Summarize the content they have already covered and incorporate the newly completed action into the updated phase description.
+This phase summary will be saved in the database for later use in calibration.
 
 All output must be in markdown format.
 
@@ -228,16 +229,6 @@ You will be helping a user who is considering giving up on their current learnin
 Your goal is to empathize with their situation, 
 summarize the giveup reason for internal use, suggest a new action, and motivate them to keep going.
 
-here is user's current trying action:
-<CURRENT_ACTION>
-{{CURRENT_ACTION}}
-</CURRENT_ACTION>
-
-here is the giveup reason provided by the user:
-<GIVEUP_REASON>
-{{GIVEUP_REASON}}
-</GIVEUP_REASON>
-
 here is the specific development field the user is focused on:
 <FIELD>
 {{FIELD}}
@@ -258,13 +249,25 @@ here is some additional context about the user's current
 {{STICC}}
 </STICC>
 
+here is user's current trying action:
+<ACTION>
+{{ACTION}}
+</ACTION>
+
+here is the giveup reason provided by the user:
+<REASON>
+{{REASON}}
+</REASON>
+
 --- 
 
 First, acknowledge the user's reason for wanting to give up and provide empathetic feedback. 
 Let them know that their feelings are valid and that challenges are a normal part of the learning process.
 
-Next, summarize the reason they want to give up in a concise statement inside <GIVEUP_SUMMARY> tags. 
-This summary will be saved in the database for later use in calibration.
+Next, update the user's curriculum phase to reflect their completion of the action inside <UPDATED_PHASE> tags. 
+Summarize the content they have already covered and incorporate the reason they want to give up in a concise statement
+into the updated phase description.
+This phase summary will be saved in the database for later use in calibration.  
 
 Then, carefully analyze the STICC information,
 taking into account the user's development field, overall curriculum, and current phase. 
@@ -284,13 +287,13 @@ All output must be in markdown format.
 
 Structure your output like this:
 <RESULT>
-<GIVEUP_FEEDBACK>
+<FEEDBACK>
 [Your empathetic feedback on their reason for wanting to give up]
-</GIVEUP_FEEDBACK>
+</FEEDBACK>
 
-<GIVEUP_SUMMARY>
-[Your concise summary of the reason for internal use] 
-</GIVEUP_SUMMARY>
+<UPDATED_PHASE>
+[Your updated curriculum phase reflecting their completion of the action and reason for giving up]   
+</UPDATED_PHASE>
 
 <ACTION>
 [Your suggested new action]

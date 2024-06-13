@@ -1,6 +1,6 @@
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.mentors.service import retrieve_current_action, update_current_action_result, insert_new_action, \
-    update_curriculum, update_complete_current_action, update_curriculum_phase
+    update_curriculum, update_complete_current_action, update_curriculum_phase, update_giveup_current_action
 from app.feats.prompt.const import *
 from app.feats.prompt.schemas import CurriculumRequest
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
@@ -123,15 +123,44 @@ async def complete_action(client, db, mentor: MentorDTO, action: str, comment: s
 
 
 async def giveup_action(client, db, mentor: MentorDTO, action: str, comment: str):
-    # TODO: GPT에게 액션 포기를 알리고, 피드백을 받아야 함
+    variables = {
+        "FIELD": mentor.get_field_to_str(),
+        "CURRICULUM": mentor.get_curriculum(),
+        "PHASE": mentor.get_curr_phase(),
+        "STICC": mentor.get_STICC_to_str(),
+        "ACTION": action,
+        "REASON": comment
+    }
+    formatted_prompt = inject_variables(prompt_giveup_action, variables)
+    response = client.chat.completions.create(
+        model=settings.gpt_model,
+        messages=[
+            {
+                "role": "system",
+                "content": formatted_prompt + prompt_always_korean
+            },
+        ],
+        temperature=0.75,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.75,
+    )
+    response_content = response.choices[0].message.content.strip()
+    parsed_response = extract_tagged_sections(response_content)
 
-    # TODO: 피드백은 액션에 저장하여 업데이트 해야 함
-    is_done = False
+    phase = parsed_response["UPDATED_PHASE"]
+    phase = phase if phase else mentor.get_curr_phase()
 
-    # TODO: Mentor의 컬리쿨럼 Phase를 업데이트 해야 함
+    feedback = parsed_response["FEEDBACK"]
+    feedback = feedback if feedback else "No feedback provided."
 
-    # TODO: 피드백 반환
-    pass
+    # Update current action
+    await update_giveup_current_action(db, mentor.mentor_id, feedback)
+
+    # Update mentor's phase
+    await update_curriculum_phase(db, mentor.mentor_id, phase)
+
+    return parsed_response
 
 
 """

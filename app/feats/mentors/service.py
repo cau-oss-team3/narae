@@ -56,6 +56,7 @@ async def update_curriculum(
             return None
 
         mentor.curriculum = curriculum
+        mentor.curriculum_phase = ""
         db.add(mentor)
         await db.commit()
         await db.refresh(mentor)
@@ -191,10 +192,10 @@ async def update_complete_current_action(
     """
     Give up current action
     """
-    return update_current_action_result(db, mentor_id, is_active=False, is_done=True)
+    return await update_current_action_result(db, mentor_id, feedback, is_done=True, is_active=False)
 
 
-async def giveup_current_action(
+async def update_giveup_current_action(
         db: AsyncSession,
         mentor_id: int,
         feedback: str = "",
@@ -202,4 +203,4 @@ async def giveup_current_action(
     """
     Give up current action
     """
-    return update_current_action_result(db, mentor_id, is_active=False, is_done=False)
+    return await update_current_action_result(db, mentor_id, feedback, is_done=False, is_active=False)
