@@ -1,6 +1,6 @@
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.mentors.service import retrieve_current_action, update_current_action_result, insert_new_action, \
-    update_curriculum
+    update_curriculum, update_complete_current_action, update_curriculum_phase
 from app.feats.prompt.const import *
 from app.feats.prompt.schemas import CurriculumRequest
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
@@ -82,7 +82,6 @@ async def make_current_action(client, db, mentor: MentorDTO, action: str):
 
 
 async def complete_action(client, db, mentor: MentorDTO, action: str, comment: str):
-    # TODO: GPT에게 액션 완료를 알리고, 완료에 대한 피드백을 받아야 함.
     variables = {
         "CURRICULUM": mentor.get_curriculum(),
         "PHASE": mentor.get_curr_phase(),
@@ -111,18 +110,19 @@ async def complete_action(client, db, mentor: MentorDTO, action: str, comment: s
     phase = parsed_response["UPDATED_PHASE"]
     phase = phase if phase else mentor.get_curr_phase()
 
-    feedback = parsed_response["DECISION"]
+    feedback = parsed_response["FEEDBACK"]
     feedback = feedback if feedback else "No feedback provided."
-    # TODO: 피드백은 액션에 저장하여 업데이트 해야 함
-    is_done = True
 
-    # TODO: Mentor의 컬리쿨럼 Phase를 업데이트 해야 함
+    # Update current action
+    await update_complete_current_action(db, mentor.mentor_id, feedback)
 
-    # TODO: 피드백 반환
+    # Update mentor's phase
+    await update_curriculum_phase(db, mentor.mentor_id, phase)
+
     return parsed_response
 
 
-async def giveup_action(client, db, mentor_id: int, action: str, is_active: bool):
+async def giveup_action(client, db, mentor: MentorDTO, action: str, comment: str):
     # TODO: GPT에게 액션 포기를 알리고, 피드백을 받아야 함
 
     # TODO: 피드백은 액션에 저장하여 업데이트 해야 함

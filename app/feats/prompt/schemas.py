@@ -26,8 +26,8 @@ class CreateCurrentActionRequest(BaseModel):
 
 
 class CompleteActionResultRequest(BaseModel):
-    result: str
-    reason: str = ''
+    success: bool = True
+    comment: str = ''
 
 
 class QuestionRequest(BaseModel):

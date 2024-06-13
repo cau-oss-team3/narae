@@ -8,6 +8,7 @@ from app.feats.auth.models import User
 from app.feats.auth.service import get_current_user
 from .models import Mentor2
 from .schemas import MentorDTO
+from .service import retrieve_current_action
 
 router = APIRouter(prefix="/mentors2", tags=["mentors2"])
 
@@ -15,9 +16,9 @@ router = APIRouter(prefix="/mentors2", tags=["mentors2"])
 # 멘토 생성
 @router.post("")
 async def create_mentor(
-    input_mentor_detail: MentorDTO,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
+        input_mentor_detail: MentorDTO,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
 ):
     creator_id = current_user.id
 
@@ -53,8 +54,8 @@ async def create_mentor(
 # 멘토 리스트 얻기 - getMentorList
 @router.get("")
 async def get_mentor_list(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
 ):
     creator_id = current_user.id
     async with db:
@@ -65,12 +66,12 @@ async def get_mentor_list(
     return_mentor = []
 
     for i in range(len(found_mentor)):
-        # TODO 후에 daily-action 값 가져오기
+        daily_action = await retrieve_current_action(db, found_mentor[i].id)
         return_mentor.append(
             {
                 "id": found_mentor[i].id,
                 "name": found_mentor[i].mentor_name,
-                "daily_action": "",
+                "daily_action": daily_action
             }
         )
 
@@ -80,9 +81,9 @@ async def get_mentor_list(
 # 멘토 얻기 - getMentor
 @router.get("/{id}")
 async def get_mentor(
-    id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
+        id: int,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
         query = select(Mentor2).filter(Mentor2.id == id, Mentor2.user_id == current_user.id)
@@ -122,10 +123,10 @@ async def get_mentor(
 
 @router.put("/{id}")
 async def update_mentor(
-    id: int,
-    input_mentor_detail: MentorDTO,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
+        id: int,
+        input_mentor_detail: MentorDTO,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
         query = select(Mentor2).filter(id == Mentor2.id, Mentor2.user_id == current_user.id)
@@ -175,9 +176,9 @@ async def update_mentor(
 
 @router.delete("/{id}")
 async def delete_mentor(
-    id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
+        id: int,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
         query = select(Mentor2).filter(id == Mentor2.id, Mentor2.user_id == current_user.id)

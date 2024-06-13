@@ -30,6 +30,7 @@ async def make_curriculum(
     except Exception as e:
         return {"error": str(e)}
 
+
 @router.get("/{mentor_id}/curriculum")
 async def get_curriculum(
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
@@ -82,7 +83,7 @@ async def get_current_action(
     현재 진행 중인 데일리 액션을 반환합니다.
     없으면 null을 반환합니다.
     """
-    return await action
+    return action
 
 
 @router.post("/{mentor_id}/daily-actions/current")
@@ -97,36 +98,22 @@ async def create_current_action(
 
 @router.patch("/{mentor_id}/daily-action/current")
 async def complete_current_action_result(
-        mentor_id: int,
         request: CompleteActionResultRequest,
-        # current_user: User = Depends(get_current_user),
-        # db: AsyncSession = Depends(get_async_session),
-        # client: OpenAI = Depends(get_openai_client),
+        current_action=Depends(get_current_action),
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        client: OpenAI = Depends(get_openai_client),
+        db: AsyncSession = Depends(get_async_session),
 ):
     """
     현재 진행 중인 데일리 액션을 완료하고 결과를 저장하고 피드백을 반환합니다.
     """
-    # TODO: check if mentor has current action
-    # TODO: save action result to database
-    # TODO: get feedback from openai and return
-    return {"error": "Not implemented"}
+    if current_action is None or not current_action.is_active:
+        raise HTTPException(status_code=404, detail="Current action not found")
 
-
-@router.patch("/{mentor_id}/daily-action/current")
-async def giveup_current_action_result(
-        mentor_id: int,
-        request: CompleteActionResultRequest,
-        # current_user: User = Depends(get_current_user),
-        # db: AsyncSession = Depends(get_async_session),
-        # client: OpenAI = Depends(get_openai_client),
-):
-    """
-    현재 진행 중인 데일리 액션을 완료하고 결과를 저장하고 피드백을 반환합니다.
-    """
-    # TODO: check if mentor has current action
-    # TODO: save action result to database
-    # TODO: get feedback from openai and return
-    return {"error": "Not implemented"}
+    if request.success:
+        return await complete_action(client, db, mentor, current_action, request.comment)
+    else:
+        return await giveup_action(client, db, mentor, current_action, request.comment)
 
 
 @router.post("/{mentor_id}/question")

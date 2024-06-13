@@ -63,6 +63,31 @@ async def update_curriculum(
     return mentor
 
 
+async def update_curriculum_phase(
+        db: AsyncSession,
+        mentor_id: int,
+        phase: str,
+):
+    async with db:
+        query = select(Mentor2).filter(Mentor2.id == mentor_id)
+        result = await db.execute(query)
+        mentor = result.scalar()
+
+        if mentor is None:
+            return None
+
+        mentor.curriculum_phase = phase
+        db.add(mentor)
+        await db.commit()
+        await db.refresh(mentor)
+
+    return mentor
+
+
+"""
+Action
+"""
+
 async def retrieve_all_actions(
         db: AsyncSession,
         mentor_id: int,
@@ -158,11 +183,23 @@ async def update_current_action_result(
     return current_action
 
 
-async def giveup_current_action(
+async def update_complete_current_action(
         db: AsyncSession,
         mentor_id: int,
+        feedback: str = "",
 ):
     """
     Give up current action
     """
-    return update_current_action_result(db, mentor_id, result="Give up", is_done=False, is_active=False)
+    return update_current_action_result(db, mentor_id, is_active=False, is_done=True)
+
+
+async def giveup_current_action(
+        db: AsyncSession,
+        mentor_id: int,
+        feedback: str = "",
+):
+    """
+    Give up current action
+    """
+    return update_current_action_result(db, mentor_id, is_active=False, is_done=False)

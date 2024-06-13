@@ -71,4 +71,4 @@ async def get_current_action(
         mentor_id: int,
         db: AsyncSession = Depends(get_async_session),
 ):
-    return retrieve_current_action(db, mentor_id)
+    return await retrieve_current_action(db, mentor_id)
