@@ -149,17 +149,8 @@ class ChatResponseFail(BaseModel):
 
 
 class Chatting(BaseModel):
-    seq: int
+    seq: int = 0  # id
     chat_type: int = Field(ge=0, le=8)
     chat_data: str = ""
     timestamp: int
     visibility: bool = True
-
-    @field_validator("chat_data", mode="before")
-    @classmethod
-    def validate_chat_data_length(cls, v):
-        if len(v) < MIN_LENGTH:
-            raise AuthenticationFailedException(
-                status_code=413, message="토큰 length가 작음"
-            )
-        return v

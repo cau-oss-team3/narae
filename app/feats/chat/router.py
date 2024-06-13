@@ -16,10 +16,9 @@ from app.feats.chat.schemas import (
     MentorInfoResponse,
 )
 from app.feats.chat.schemas import Chatting
-from app.feats.chat.service import create_chatting, get_chatHistoryList
+from app.feats.chat.service import create_chatting, get_chat_history_list
 from app.feats.mentors.schemas import MentorDTO
-from app.feats.mentors.service import get_mentor2_by_id
-from app.feats.prompt.depends import get_openai_client
+from app.feats.prompt.depends import get_openai_client, get_mentor_from_path_variable
 from app.feats.prompt.service import ask_question
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -33,6 +32,29 @@ async def get_token(
     return token
 
 
+@router.post("/chat-test/{mentor_id}")
+async def create_chat_history(
+    mentor_id: int,
+    chatting: Chatting,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    chat = await create_chatting(chatting, current_user.id, mentor_id, db)
+    return {"isSuccess": True, "chat": chat}
+
+
+@router.get("/chat-test/{mentor_id}")
+async def get_chat_history(
+    mentor_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+
+    found_chat_history = await get_chat_history_list(current_user.id, mentor_id, db)
+
+    return {"isSuccess": True, "chat": found_chat_history}
+
+
 @router.websocket("/{mentor_id}")
 async def websocket_endpoint(
     *,
@@ -44,6 +66,7 @@ async def websocket_endpoint(
     db: AsyncSession = Depends(get_async_session),
 ):
     seq = 0
+    user = None
     try:
         user = await get_current_user(token, db)
         if user is None:
@@ -59,7 +82,7 @@ async def websocket_endpoint(
     await manager.connect(websocket)
 
     # get mentor info and answer
-    mentor: MentorDTO = await get_mentor2_by_id(mentor_id, user, db)
+    mentor: MentorDTO = await get_mentor_from_path_variable(mentor_id, user, db)
     # direction: str = format_direction_for_study(mentor.mentor_field)
     # answer = get_study_direction(direction, client).choices[0].message.content.strip()
 
@@ -72,7 +95,7 @@ async def websocket_endpoint(
         try:
             data = await websocket.receive_text()
             chat = ChatRequest.model_validate_json(data)
-            answer = ask_question(chat.chat_data, mentor, client)
+            answer = ask_question(client, mentor, chat.chat_data)
             await manager.send_direct_message(
                 MentorChatResponse(seq=0, chat_data=answer).model_dump_json(), websocket
             )
@@ -83,26 +106,3 @@ async def websocket_endpoint(
                 websocket,
             )
 
-
-@router.post("/chathistory/{mentor_id}")
-async def createChatHistory(
-    mentor_id: int,
-    chatting: Chatting,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
-):
-    await create_chatting(chatting, current_user.id, mentor_id, db)
-
-    return {"isSuccess": True}
-
-
-@router.get("/chathistory/{mentor_id}")
-async def getChatHistory(
-    mentor_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
-):
-
-    found_chathistory = await get_chatHistoryList(current_user.id, mentor_id, db)
-
-    return {"isSuccess": True, "chathistory": found_chathistory}
