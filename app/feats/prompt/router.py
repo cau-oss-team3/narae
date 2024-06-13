@@ -50,13 +50,13 @@ async def get_all_actions(
 
 @router.get("/{mentor_id}/daily-actions/current")
 async def get_current_action(
-        actions=Depends(get_current_action)
+        action=Depends(get_current_action)
 ):
     """
     현재 진행 중인 데일리 액션을 반환합니다.
     없으면 null을 반환합니다.
     """
-    return await actions
+    return await action
 
 
 @router.post("/{mentor_id}/daily-action")
