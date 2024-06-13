@@ -1,285 +1,128 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, HTTPException
 from openai import OpenAI
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from .depends import (
-    get_answer_for_question,
-    get_direction_for_study,
-    get_recommend_action,
-    get_openai_client,
-)
-
-
-"""
-용어
- - Action: 오늘 당장 실행할 수 있는 Task
- - 커리큘럼: 사용자의 장기적인 학습 행동 방침 - 장기간의 거대한 목표, 체계적인 지식 습득 위함, 향후 참조할 대량의 자료, 마일스톤
- - 학습방향: 사용자의 단기적인 학습 행동 방침 - 단기간의 일시적 목표, 자신의 능력 향상을 위함, 지금 참조할 소량의 자료, 플래그
-
-기본 전제
- - 포기하지 않도록 동기 부여를 해줘야 한다.
-"""
-
+from .depends import get_mentor_from_path_variable, get_openai_client, get_actions, get_current_action
+from .schemas import *
+from .service import *
+from ..mentors.schemas import ActionStatus
+from ...core.database import get_async_session
 
 router = APIRouter(prefix="/prompt", tags=["prompt"])
 
-OPENAI_MODEL = "gpt-3.5-turbo-1106"
 
-
-# @router.post("/direction/")
-# def get_study_direction(
-#     existing_learning = "",
-#     learning_goal = "",
-#     study_direction=Depends(get_direction_for_study),
-#     client: OpenAI = Depends(get_openai_client),
-# ):
-#     """
-#     <학습 방향>에 대한 함수
-
-#     용어
-#      - Action: 오늘 당장 실행할 수 있는 Task
-
-#     다음에 해야 하는 ***학습 방향***을 제시해줘야 한다.
-#      - DB에 저장해서 사용자가 다시 찾아볼 수 있도록 제공한다.
-#      - 오늘 접속한 경우 띄워준다.
-#      - 액션을 하기 전 사용자가 학습 방향을 먼저 제시받아야 한다.
-
-#     Parameters:
-#      - existing_learning: 이전 학습 기록
-#      - learning_goal: 커리큘럼과 마일스톤
-#     """
-#     response = client.chat.completions.create(
-#         model=OPENAI_MODEL,
-#         messages=[
-#             {
-#                 "role": "system",
-#                 "content": "You are a guide who suggests the today's study direction and next short-term goal to the user. Your message is given to the user just before the study starts." + \
-#                            "Make sure your advice is specific enough to be actionable and at the right level of difficulty." + \
-#                            "Also, make sure to motivate the user to keep going." + \
-#                            f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease provide detailed guidance for the next steps in learning, taking into account the current knowledge and the desired learning outcome." + \
-#                            "please say it in Korean. Thank you."
-#             },
-#             {
-#                 "role": "assistant",
-#                 "content": existing_learning,
-#             },
-#             {
-#                 "role": "assistant",
-#                 "content": learning_goal,
-#             },
-#             {
-#                 "role": "user",
-#                 "content": study_direction.replace("\n", " "),
-#             },
-#         ],
-#         temperature=0.75,
-#         max_tokens=100,
-#         top_p=1,
-#         frequency_penalty=0,
-#         presence_penalty=0.75,
-#     )
-#     return response.choices[0].message.content
-
-
-@router.post("/recommendation/")
-def get_recommended_action(
-    existing_learning,
-    learning_goal,
-    abandon_reason,
-    recommend_action = Depends(get_recommend_action),
-    client: OpenAI = Depends(get_openai_client),
+@router.post("/{mentor_id}/curriculum")
+async def make_curriculum(
+        request: CurriculumRequest,
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        db: AsyncSession = Depends(get_async_session),
+        client: OpenAI = Depends(get_openai_client)
 ):
     """
-    <학습 방향>에 대한 함수:
-     오늘 학습 방향에 따라 실천 가능한 <액션>을 추천한다.
-
-    용어:
-     - 학습방향: 사용자의 단기적인 학습 행동 방침 - 단기간의 일시적 목표, 자신의 능력 향상을 위함, 지금 참조할 소량의 자료, 플래그
-
-    요구사항:
-     - 이때 실천 가능할만큼 구체적이고 적절한 난이도의 조언을 해야 한다.
-     - 내가 처음인지/어디까지 해봤는지 알아야 한다.
-     - 액션을 어떻게 완수했는지 알릴 수 있어야 한다. 액션 완수 내용을 말하면 피드백 해줘야 한다.
-     - 액션 포기가 가능해야 한다. 포기하는 경우 이유를 말해고 다음 액션을 추천해준다.(+서버에 저장)
-
-    Parameters:
-     - existing_learning: 이전 학습 기록
-     - learning_goal: 커리큘럼과 마일스톤
+    멘토의 curriculum을 생성합니다.
     """
-    response = client.chat.completions.create(
-        model=OPENAI_MODEL,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a guide who suggests the next action which depends to the today's study direction. Your message is given to the user after the's study direction is given. Make sure your advice is specific enough to be actionable and at the right level of difficulty." + \
-                           "Also, make sure to motivate the user to keep going." + \
-                           "If the user completes the action, please provide feedback on how they completed it." + \
-                           "If the user abandons the action, ask for the reason and suggest the next recommended action based on the reason." + \
-                           f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease recommend an action that can be done according to today's learning direction."
-            },
-            {
-                "role": "assistant",
-                "content": existing_learning,
-            },
-            {
-                "role": "assistant",
-                "content": learning_goal,
-            },
-            {
-                "role": "user",
-                "content": recommend_action.replace("\n", " "),
-            },
-        ],
-        temperature=0.75,
-        max_tokens=150,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0.75,
-    )
+    try:
+        response = ask_curriculum(client, mentor, request)
+        curriculum = response.get("CURRICULUM", "")
+        await save_curriculum(db, mentor, curriculum)
 
-    # 사용자가 액션을 완료할 시 이에 대한 응답
-    response_text = response.choices[0].message.content.strip()
-    if "completed" in response_text.lower():
-        feedback_prompt = "Please provide feedback on how you completed the action."
-        response_with_feedback = client.chat.completions.create(
-            model=OPENAI_MODEL,
-            messages=[
-                  {
-                     "role": "system",
-                     "content": feedback_prompt,
-                  },
-                  {
-                     "role": "user",
-                     "content": response_text,
-                  }
-            ],
-            temperature=0.5,
-            max_tokens=150,
-            frequency_penalty=0,
-            presence_penalty=0,
-        )
-        response_text += (
-            "\n\nFeedback: " + response_with_feedback.choices[0].message.content.strip()
-        )
-
-    # 사용자가 액션을 포기할 시 이에 대한 응답
-    elif "abandoned" in response_text.lower():
-        reason_prompt = "Please specify the reason for abandoning the action."
-        next_action_prompt = "Based on your reason for abandoning the action, here's the next recommended action."
-
-        reason_response = client.chat.completions.create(
-            model=OPENAI_MODEL,
-            messages=[
-                {
-                     "role": "system",
-                     "content": reason_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": abandon_reason,
-                }
-            ],
-            temperature=0.75,
-            max_tokens=150,
-            frequency_penalty=0,
-            presence_penalty=0,
-        )
-
-        next_action_response = client.chat.completions.create(
-            model=OPENAI_MODEL,
-            messages=[
-                  {
-                     "role": "system",
-                     "content": next_action_prompt,
-                  },
-                  {
-                     "role": "user",
-                     "content": reason_response.choices[0].message.content.strip(),
-                  }
-            ],
-            temperature=0.75,
-            max_tokens=150,
-            frequency_penalty=0,
-            presence_penalty=0,
-        )
-
-        response_text += (
-            f"\n\nReason for abandoning: {reason_response.choices[0].message.content.strip()}"
-            f"\n\nNext recommended action: {next_action_response.choices[0].message.content.strip()}"
-        )
-
-    return response_text
+        return response
+    except Exception as e:
+        return {"error": str(e)}
 
 
-@router.post("/question/")
-def get_answer_question(
-    user_question,
-    study_direction=Depends(get_answer_for_question),
-    client: OpenAI = Depends(get_openai_client),
+@router.get("/{mentor_id}/curriculum")
+async def get_curriculum(
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
 ):
     """
-    나의 관심분야에 대한 질문에 <답>을 해줘야 한다.
-     - 기본적인 채팅의 형태로 이루어진다.
-     - 임베딩이 사용할 수 있으면 좋다.
+    멘토의 curriculum을 반환합니다.
     """
-    response = client.chat.completions.create(
-        model=OPENAI_MODEL,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a teacher who gives answer to the question which the user gives. Please provide an answer to the user's question about your areas of interest.",
-            },
-            {
-                "role": "user",
-                "content": user_question,
-            },
-            {
-                "role": "user",
-                "content": study_direction.replace("\n", " "),
-            },
-        ],
-        temperature=0.5,
-        max_tokens=150,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-    )
-    return response.choices[0].message.content.strip()
+    return {
+        "CURRICULUM": mentor.curriculum,
+        "PHASE": mentor.curriculum_phase
+    }
 
 
-"""
-# @router.post("/test-gpt/")
-def test_gpt(sticc: UserSituationRequest, client: OpenAI = Depends(get_openai_client)):
-   userInput = format_sticc_for_coaching(sticc)
+@router.post("/{mentor_id}/action-suggestion")
+async def make_action_suggestions(
+        request: ActionSuggestRequest,
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        client: OpenAI = Depends(get_openai_client),
+):
+    """
+    멘토의 action suggestion을 3개 생성합니다.
+    """
+    return suggest_actions(client, mentor, request.hint)
 
-   response = client.chat.completions.create(
-      model=OPENAI_MODEL,
-      ## TODO: 만들어야 하는 것: 주어진 시나리오가 가능하도록 하게 함
-      ## TODO: tempeture 등 정보의 적절한 값을 검색하기
-      messages=[
-            {
-               "role": "user",
-               "content": system_prompt,
-            },
-            {
-               "role": "assistant",
-               "content": sticc_content,
-            },
-            {
-               "role": "user",
-               "content": sticc_content,
-            },
-            {
-               "role": "user",
-               "content": "Given the details I've provided, could you assess my current progress, identify obstacles, and suggest next action items?"
-            }
-      ],
-      temperature=0.5,
-      max_tokens=256,
-      top_p=1,
-      frequency_penalty=0,
-      presence_penalty=0
-   )
 
-   return {"response": response.choices[0].message.content}
+@router.get("/{mentor_id}/daily-actions")
+async def get_all_actions(
+        actions=Depends(get_actions),
+        action_status: ActionStatus = Query(ActionStatus.all, description="completed status")
+):
+    """
+    모든 데일리 액션을 반환합니다.
+    """
+    actions = await actions
+    if action_status == ActionStatus.done:
+        filtered_actions = [action for action in actions if not action.is_active]
+    elif action_status == ActionStatus.current:
+        filtered_actions = [action for action in actions if action.is_active]
+    else:
+        filtered_actions = actions
 
-"""
+    return filtered_actions
+
+
+@router.get("/{mentor_id}/daily-actions/current")
+async def get_current_action(
+        action=Depends(get_current_action)
+):
+    """
+    현재 진행 중인 데일리 액션을 반환합니다.
+    없으면 null을 반환합니다.
+    """
+    return action
+
+
+@router.post("/{mentor_id}/daily-actions/current")
+async def create_current_action(
+        request: CreateCurrentActionRequest,
+        db: AsyncSession = Depends(get_async_session),
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        client: OpenAI = Depends(get_openai_client),
+):
+    return await make_current_action(client, db, mentor, request.action)
+
+
+@router.patch("/{mentor_id}/daily-action/current")
+async def complete_current_action_result(
+        request: CompleteActionResultRequest,
+        current_action=Depends(get_current_action),
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        client: OpenAI = Depends(get_openai_client),
+        db: AsyncSession = Depends(get_async_session),
+):
+    """
+    현재 진행 중인 데일리 액션을 완료하고 결과를 저장하고 피드백을 반환합니다.
+    """
+    if current_action is None or not current_action.is_active:
+        raise HTTPException(status_code=404, detail="Current action not found")
+
+    if request.success:
+        return await complete_action(client, db, mentor, current_action, request.comment)
+    else:
+        return await giveup_action(client, db, mentor, current_action, request.comment)
+
+
+@router.post("/{mentor_id}/question")
+async def make_question(
+        request: QuestionRequest,
+        mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        client: OpenAI = Depends(get_openai_client),
+):
+    """
+    질문을 받아 답변을 생성합니다.
+    """
+    return ask_question(client, mentor, request.question)

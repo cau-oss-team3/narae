@@ -1,92 +1,301 @@
-from openai import OpenAI
-
 from app.feats.mentors.schemas import MentorDTO
+from app.feats.mentors.service import retrieve_current_action, update_current_action_result, insert_new_action, \
+    update_curriculum, update_complete_current_action, update_curriculum_phase, update_giveup_current_action
+from app.feats.prompt.const import *
+from app.feats.prompt.schemas import CurriculumRequest
+from app.feats.prompt.utils import extract_tagged_sections, inject_variables
+from app.settings import settings
+
+OPENAI_MODEL = settings.gpt_model
+OPENAI_EMBEDDING_MODEL = settings.gpt_embedding_model
+
+"""
+Curriculum
+"""
 
 
-OPENAI_MODEL = "gpt-3.5-turbo-1106"
+def ask_curriculum(client,
+                   mentor: MentorDTO,
+                   curriculum_request: CurriculumRequest
+                   ):
+    variables = {
+        "FIELD": mentor.get_field_to_str(),
+        "STICC": mentor.get_STICC_to_str(),
+        "HINT": curriculum_request.hint,
+    }
+    formatted_prompt = inject_variables(prompt_curriculum, variables)
 
-
-def get_study_direction(
-    study_direction,
-    client: OpenAI,
-    existing_learning = "",
-    learning_goal = "",
-):
-    """
-    <학습 방향>에 대한 함수
-
-    용어
-     - Action: 오늘 당장 실행할 수 있는 Task
-
-    다음에 해야 하는 ***학습 방향***을 제시해줘야 한다.
-     - DB에 저장해서 사용자가 다시 찾아볼 수 있도록 제공한다.
-     - 오늘 접속한 경우 띄워준다.
-     - 액션을 하기 전 사용자가 학습 방향을 먼저 제시받아야 한다.
-
-    Parameters:
-     - existing_learning: 이전 학습 기록
-     - learning_goal: 커리큘럼과 마일스톤
-    """
     response = client.chat.completions.create(
-        model=OPENAI_MODEL,
+        model=settings.gpt_model,
         messages=[
             {
                 "role": "system",
-                "content": "You are a guide who suggests the today's study direction and next short-term goal to the user. Your message is given to the user just before the study starts." + \
-                           "Make sure your advice is specific enough to be actionable and at the right level of difficulty." + \
-                           "Also, make sure to motivate the user to keep going." + \
-                           f"Existing learning content: {existing_learning}\nLearning goal: {learning_goal}\nPlease provide detailed guidance for the next steps in learning, taking into account the current knowledge and the desired learning outcome." + \
-                           "You should not exceed 200 words. Please say it in Korean. Thank you."
-            },
-            {
-                "role": "assistant",
-                "content": existing_learning,
-            },
-            {
-                "role": "assistant",
-                "content": learning_goal,
-            },
-            {
-                "role": "user",
-                "content": study_direction.replace("\n", " "),
+                "content": formatted_prompt + prompt_always_korean
             },
         ],
         temperature=0.75,
-        max_tokens=500,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0.75,
     )
-    return response.choices[0].message.content
+    response_content = response.choices[0].message.content.strip()
+    return extract_tagged_sections(response_content)
 
 
-def get_qna_answer(
-    question,
-    mentor: MentorDTO,
-    client: OpenAI,
-):
+async def save_curriculum(db, mentor: MentorDTO, curriculum: str):
+    return await update_curriculum(db, mentor.mentor_id, curriculum)
+
+"""
+Action
+"""
+
+
+def suggest_actions(client, mentor: MentorDTO, hint: str):
+    variables = {
+        "STICC": mentor.get_STICC_to_str(),
+        "FIELD": mentor.get_field_to_str(),
+        "CURRICULUM": mentor.get_curriculum(),
+        "PHASE": mentor.get_curr_phase(),
+    }
+    formatted_prompt = inject_variables(prompt_suggest_three_action, variables)
+
     response = client.chat.completions.create(
-        model=OPENAI_MODEL,
+        model=settings.gpt_model,
         messages=[
             {
                 "role": "system",
-                "content": f"You are a guide specializing in {mentor.mentor_field} with the expertise of {mentor.mentor_sticc}. " + \
-                           "Your task is to suggest today's study direction and the next short-term goal to the user, " + \
-                           "tailoring your advice to the user’s current knowledge level in {mentor.mentor_field} and desired learning outcomes. " + \
-                           "Your message is delivered just before the study session begins. " + \
-                           "Ensure your advice is specific, actionable, and motivating, encouraging the user to persist in their studies." + \
-                           f"Question: {question}\nPlease provide detailed guidance for the next steps in learning, taking into account the current knowledge and the desired learning outcome." + \
-                           "You should not exceed 200 words and please provide the response in Korean."
-            },
-            {
-                "role": "user",
-                "content": question.replace("\n", " "),
+                "content": formatted_prompt + prompt_always_korean
             },
         ],
         temperature=0.75,
-        max_tokens=500,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0.75,
     )
-    return response.choices[0].message.content
+    response_content = response.choices[0].message.content.strip()
+    return extract_tagged_sections(response_content)
+
+
+async def make_current_action(client, db, mentor: MentorDTO, action: str):
+    await update_current_action_result(db, mentor.mentor_id, is_active=False, is_done=False)
+    return await insert_new_action(db, mentor.mentor_id, action, is_active=True, is_done=False)
+
+
+async def complete_action(client, db, mentor: MentorDTO, action: str, comment: str):
+    variables = {
+        "CURRICULUM": mentor.get_curriculum(),
+        "PHASE": mentor.get_curr_phase(),
+        "FIELD": mentor.get_field_to_str(),
+        "STICC": mentor.get_STICC_to_str(),
+        "ACTION": action,
+        "COMMENT": comment
+    }
+    formatted_prompt = inject_variables(prompt_complete_action, variables)
+    response = client.chat.completions.create(
+        model=settings.gpt_model,
+        messages=[
+            {
+                "role": "system",
+                "content": formatted_prompt + prompt_always_korean
+            },
+        ],
+        temperature=0.75,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.75,
+    )
+    response_content = response.choices[0].message.content.strip()
+    parsed_response = extract_tagged_sections(response_content)
+
+    phase = parsed_response["UPDATED_PHASE"]
+    phase = phase if phase else mentor.get_curr_phase()
+
+    feedback = parsed_response["FEEDBACK"]
+    feedback = feedback if feedback else "No feedback provided."
+
+    # Update current action
+    await update_complete_current_action(db, mentor.mentor_id, feedback)
+
+    # Update mentor's phase
+    await update_curriculum_phase(db, mentor.mentor_id, phase)
+
+    return parsed_response
+
+
+async def giveup_action(client, db, mentor: MentorDTO, action: str, comment: str):
+    variables = {
+        "FIELD": mentor.get_field_to_str(),
+        "CURRICULUM": mentor.get_curriculum(),
+        "PHASE": mentor.get_curr_phase(),
+        "STICC": mentor.get_STICC_to_str(),
+        "ACTION": action,
+        "REASON": comment
+    }
+    formatted_prompt = inject_variables(prompt_giveup_action, variables)
+    response = client.chat.completions.create(
+        model=settings.gpt_model,
+        messages=[
+            {
+                "role": "system",
+                "content": formatted_prompt + prompt_always_korean
+            },
+        ],
+        temperature=0.75,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.75,
+    )
+    response_content = response.choices[0].message.content.strip()
+    parsed_response = extract_tagged_sections(response_content)
+
+    phase = parsed_response["UPDATED_PHASE"]
+    phase = phase if phase else mentor.get_curr_phase()
+
+    feedback = parsed_response["FEEDBACK"]
+    feedback = feedback if feedback else "No feedback provided."
+
+    # Update current action
+    await update_giveup_current_action(db, mentor.mentor_id, feedback)
+
+    # Update mentor's phase
+    await update_curriculum_phase(db, mentor.mentor_id, phase)
+
+    return parsed_response
+
+
+"""
+Question
+"""
+
+
+def ask_question(client, mentor: MentorDTO, user_question: str):
+    variables = {
+        "FIELD": mentor.get_field_to_str(),
+        "CURRICULUM": mentor.get_curriculum(),
+        "PHASE": mentor.get_curr_phase(),
+        "STICC": mentor.get_STICC_to_str(),
+        "QUESTION": user_question,
+    }
+    formatted_prompt = inject_variables(prompt_question, variables)
+    response = client.chat.completions.create(
+        model=settings.gpt_model,
+        messages=[
+            {
+                "role": "system",
+                "content": formatted_prompt + prompt_always_korean
+            },
+        ],
+        temperature=0.5,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.5,
+    )
+    response_content = response.choices[0].message.content.strip()
+    return extract_tagged_sections(response_content)
+
+
+"""
+Will be deprecated
+"""
+
+
+def legacy_action(abandon_reason, client, existing_learning, learning_goal, recommend_action):
+    response = client.chat.completions.create(
+        model=settings.gpt_model,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a guide who suggests the next action which depends to the today's study "
+                           "direction. Your message is given to the user after the's study direction is given. Make "
+                           "sure your advice is specific enough to be actionable and at the right level of difficulty."
+                           "Also, make sure to motivate the user to keep going."
+                           "If the user completes the action, please provide feedback on how they completed it."
+                           "If the user abandons the action, ask for the reason and suggest the next recommended "
+                           "action based on the reason."
+                           f"Existing learning content: {existing_learning}\n"
+                           f"Learning goal: {learning_goal}\n"
+                           "Please recommend an action that can be done according to today's learning direction.",
+            },
+            {
+                "role": "user",
+                "content": recommend_action.replace("\n", " "),
+            },
+        ],
+        temperature=0.75,
+        max_tokens=150,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.75,
+    )
+
+    # 사용자가 액션을 완료할 시 이에 대한 응답
+    response_text = response.choices[0].message.content.strip()
+    if "completed" in response_text.lower():
+        feedback_prompt = "Please provide feedback on how you completed the action."
+        response_with_feedback = client.chat.completions.create(
+            model=settings.gpt_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": feedback_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": response_text,
+                },
+            ],
+            temperature=0.5,
+            max_tokens=150,
+            frequency_penalty=0,
+            presence_penalty=0,
+        )
+        response_text += (
+                "\n\nFeedback: " + response_with_feedback.choices[0].message.content.strip()
+        )
+
+    # 사용자가 액션을 포기할 시 이에 대한 응답
+    elif "abandoned" in response_text.lower():
+        reason_prompt = "Please specify the reason for abandoning the action."
+        next_action_prompt = "Based on your reason for abandoning the action, here's the next recommended action."
+
+        reason_response = client.chat.completions.create(
+            model=settings.gpt_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": reason_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": abandon_reason,
+                },
+            ],
+            temperature=0.75,
+            max_tokens=150,
+            frequency_penalty=0,
+            presence_penalty=0,
+        )
+
+        next_action_response = client.chat.completions.create(
+            model=settings.gpt_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": next_action_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": reason_response.choices[0].message.content.strip(),
+                },
+            ],
+            temperature=0.75,
+            max_tokens=150,
+            frequency_penalty=0,
+            presence_penalty=0,
+        )
+
+        response_text += (
+            f"\n\nReason for abandoning: {reason_response.choices[0].message.content.strip()}"
+            f"\n\nNext recommended action: {next_action_response.choices[0].message.content.strip()}"
+        )
+    return response_text

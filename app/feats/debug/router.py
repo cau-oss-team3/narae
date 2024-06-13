@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends
 from openai import OpenAI
 
-from .schemas import GPTRequest, GPTResponse
 from .depends import get_openai_client
-
+from .schemas import GPTRequest, GPTResponse
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
