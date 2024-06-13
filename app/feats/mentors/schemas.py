@@ -96,6 +96,25 @@ class STICC(BaseModel):
         return v
 
 
+class CreateMentorDTO(BaseModel):
+    mentor_name: str = Field(min_length=MIN_LENGTH, max_length=MAX_LENGTH)
+    mentor_field: int = Field(ge=0, le=2)
+    mentor_sticc: STICC
+
+    @field_validator("mentor_name", mode="before")
+    @classmethod
+    def validate_calibrate_length(cls, v):
+        if len(v) > 45:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 큼"
+            )
+        elif len(v) < 1:
+            raise AuthenticationFailedException(
+                status_code=413, message="토큰 length가 너무 작음"
+            )
+        return v
+
+
 class MentorDTO(BaseModel):
     mentor_id: int
     mentor_name: str = Field(min_length=1, max_length=45)

@@ -7,7 +7,7 @@ from app.core.exceptions import AuthenticationFailedException
 from app.feats.auth.models import User
 from app.feats.auth.service import get_current_user
 from .models import Mentor2
-from .schemas import MentorDTO
+from .schemas import MentorDTO, CreateMentorDTO
 from .service import retrieve_current_action
 
 router = APIRouter(prefix="/mentors2", tags=["mentors2"])
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/mentors2", tags=["mentors2"])
 # 멘토 생성
 @router.post("")
 async def create_mentor(
-        input_mentor_detail: MentorDTO,
+        input_mentor_detail: CreateMentorDTO,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_async_session),
 ):
