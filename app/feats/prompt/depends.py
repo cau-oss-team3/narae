@@ -33,17 +33,6 @@ async def get_mentor_id_from_request(request) -> int:
     return request.mentor_id
 
 
-async def get_mentor_from_request(
-        request: CurriculumRequest,
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_async_session),
-) -> MentorDTO:
-    mentor = await get_mentor2_by_id(request.mentor_id, current_user, db)
-    if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor not found")
-    return mentor
-
-
 async def get_mentor_from_path_variable(
         mentor_id: int,
         current_user: User = Depends(get_current_user),

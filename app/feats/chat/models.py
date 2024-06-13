@@ -16,7 +16,6 @@ class ChatHistory(Base):
     __tablename__ = "ChatHistory"
     user_id = Column(Integer, ForeignKey("User.id"), nullable=False)
     mentor_id = Column(Integer, ForeignKey("Mentor2.id"), nullable=False)
-    seq = Column(Integer, nullable=False)
     type = Column(Integer, nullable=False)
     chat_data = Column(Text, nullable=False)
     visibility = Column(Boolean, nullable=False)
