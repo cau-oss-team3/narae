@@ -7,6 +7,7 @@ from sqlalchemy import (
     Text,
     BigInteger,
 )
+from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 

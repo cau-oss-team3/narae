@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
@@ -181,7 +182,10 @@ async def delete_mentor(
         db: AsyncSession = Depends(get_async_session),
 ):
     async with db:
-        query = select(Mentor2).filter(id == Mentor2.id, Mentor2.user_id == current_user.id)
+        query = select(Mentor2).options(joinedload(Mentor2.chat_histories)).filter(
+            Mentor2.id == id,
+            Mentor2.user_id == current_user.id
+        )
         result = await db.execute(query)
         mentor_to_delete = result.scalar()
 
@@ -191,8 +195,7 @@ async def delete_mentor(
         )
 
     async with db:
-        query = delete(Mentor2).where(Mentor2.id == id)
-        await db.execute(query)
+        await db.delete(mentor_to_delete)
         await db.commit()
 
     return {"isSuccess": True}

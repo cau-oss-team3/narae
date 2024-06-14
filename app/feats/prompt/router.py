@@ -1,3 +1,6 @@
+import json
+import re
+
 from fastapi import APIRouter, Depends, Query, HTTPException
 from openai import OpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,8 +56,18 @@ async def make_action_suggestions(
     """
     멘토의 action suggestion을 3개 생성합니다.
     """
-    return suggest_actions(client, mentor, request.hint)
+    suggestion_result = suggest_actions(client, mentor, request.hint)
+    actions = []
+    if "ACTIONS" in suggestion_result:
+        actions_str = suggestion_result["ACTIONS"]
+        actions = re.findall(r'<ACTION\d+>(.*?)</ACTION\d+>', actions_str, re.DOTALL)
 
+    motivation = suggestion_result.get("MOTIVATION", "").strip()
+
+    return {
+        "actions": actions,
+        "motivation": motivation
+    }
 
 @router.get("/{mentor_id}/daily-actions")
 async def get_all_actions(
@@ -96,7 +109,7 @@ async def create_current_action(
     return await make_current_action(client, db, mentor, request.action)
 
 
-@router.patch("/{mentor_id}/daily-action/current")
+@router.patch("/{mentor_id}/daily-actions/current")
 async def complete_current_action_result(
         request: CompleteActionResultRequest,
         current_action=Depends(get_current_action),

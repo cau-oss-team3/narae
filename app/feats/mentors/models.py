@@ -24,11 +24,12 @@ class Mentor2(Base):
     curriculum_phase = Column(Text)
 
     actions = relationship("Action", back_populates="mentor")
+    chat_histories = relationship("ChatHistory", back_populates="mentor", cascade="all, delete-orphan")
 
 
 class Action(Base):
     __tablename__ = "Action"
-    mentor_id = Column(Integer, ForeignKey('Mentor2.id'), nullable=False)
+    mentor_id = Column(Integer, ForeignKey('Mentor2.id'), nullable=True)
     mentor = relationship("Mentor2", back_populates="actions")
 
     action = Column(Text, nullable=False)
