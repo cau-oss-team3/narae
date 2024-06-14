@@ -66,13 +66,14 @@ All output must be in markdown format.
 
 Present your recommended curriculum inside <CURRICULUM> tag like this:
 <CURRICULUM>
-[Your recommended curriculum]
+[Your recommended curriculum(Use Korean except for technical terms)]
 </CURRICULUM>
 
 Provide a sentence or two of motivation and encouragement for the user in its own <MOTIVATION> tag like this:
 Personalize it based on their specific situation and intent as described in the STICC if possible.
 <MOTIVATION>
 Provide a sentence or two of motivational encouragement for the user to keep learning and growing.
+Use polite Korean language for the response.
 </MOTIVATION>
 """
 
