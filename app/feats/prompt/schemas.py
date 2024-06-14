@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -9,3 +11,28 @@ class UserSituationRequest(BaseModel):
     calibration: str = (
         "Let's talk about things that we do not understand, or difficult, or we do not know, or should calibrate."
     )
+
+
+class CurriculumRequest(BaseModel):
+    hint: Optional[str] = ''
+
+
+class ActionSuggestRequest(BaseModel):
+    hint: Optional[str] = None
+
+
+class CreateCurrentActionRequest(BaseModel):
+    action: str
+
+
+class CompleteActionResultRequest(BaseModel):
+    success: bool = True
+    comment: str = ''
+
+
+class QuestionRequest(BaseModel):
+    question: str
+
+
+class GPTResponse(BaseModel):
+    curriculum: str
