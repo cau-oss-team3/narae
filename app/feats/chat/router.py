@@ -115,13 +115,13 @@ async def websocket_endpoint(
                 ChatResponseFail(err=f"Invalid JSON format: {e}").model_dump_json(),
                 websocket,
             )
-        # except Exception as e:
-        #     logger.error(f"Unexpected error: {e}")
-        #     await manager.send_direct_message(
-        #         MentorChatResponse(seq=0, chat_data="죄송합니다. 대답할 수 없는 질문입니다. 다르게 질문해주세요. :)").model_dump_json(), websocket
-        #     )
-        #     await manager.send_direct_message(
-        #         ChatResponseFail(err=f"Unexpected error: {e}").model_dump_json(),
-        #         websocket,
-        #     )
-        #     break
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            await manager.send_direct_message(
+                MentorChatResponse(seq=0, chat_data="죄송합니다. 대답할 수 없는 질문입니다. 다르게 질문해주세요. :)").model_dump_json(), websocket
+            )
+            await manager.send_direct_message(
+                ChatResponseFail(err=f"Unexpected error: {e}").model_dump_json(),
+                websocket,
+            )
+            break
