@@ -7,7 +7,6 @@ from app.feats.auth.models import User
 from app.feats.auth.service import get_current_user
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.mentors.service import get_mentor2_by_id, retrieve_all_actions, retrieve_current_action
-from app.feats.prompt.schemas import CurriculumRequest
 from app.settings import settings
 
 
