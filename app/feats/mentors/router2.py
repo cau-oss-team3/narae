@@ -125,7 +125,7 @@ async def get_mentor(
 @router.put("/{id}")
 async def update_mentor(
         id: int,
-        input_mentor_detail: MentorDTO,
+        input_mentor_detail: CreateMentorDTO,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_async_session),
 ):
