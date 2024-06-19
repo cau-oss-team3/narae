@@ -2,8 +2,9 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketException, status
-from openai import OpenAI
+from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.websockets import WebSocketDisconnect
 
 from app.core.database import get_async_session
 from app.core.exceptions import AuthenticationFailedException
@@ -19,8 +20,8 @@ from app.feats.chat.schemas import (
 from app.feats.chat.schemas import Chatting
 from app.feats.chat.service import create_chatting, get_chat_history_list
 from app.feats.mentors.schemas import MentorDTO
-from app.feats.prompt.depends import get_openai_client, get_mentor_from_path_variable
-from app.feats.prompt.service import ask_question
+from app.feats.prompt.depends import get_openai_async_client, get_mentor_from_path_variable
+from app.feats.prompt.service import ask_question_async
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger("websocket")
@@ -61,7 +62,7 @@ async def websocket_endpoint(
     websocket: WebSocket,
     mentor_id: int,
     token: Annotated[str, Depends(get_token)],
-    client: OpenAI = Depends(get_openai_client),
+    client: AsyncOpenAI = Depends(get_openai_async_client),
     manager: WebsocketConnectionManager = Depends(get_websocket_manager),
     db: AsyncSession = Depends(get_async_session),
 ):
@@ -78,52 +79,62 @@ async def websocket_endpoint(
                 code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token"
             )
 
-    await manager.connect(websocket)
+    try:
+        await manager.connect(websocket)
 
-    # get mentor info and answer
-    mentor: MentorDTO = await get_mentor_from_path_variable(mentor_id, user, db)
+        # get mentor info and answer
+        mentor: MentorDTO = await get_mentor_from_path_variable(mentor_id, user, db)
 
-    await manager.send_direct_message(
-        MentorInfoResponse(seq=0).model_dump_json(), websocket
-    )
-    while True:
-        try:
-            # get user chat
-            data = await websocket.receive_text()
-            chat = ChatRequest.model_validate_json(data)
+        await manager.send_direct_message(
+            MentorInfoResponse(seq=0).model_dump_json(), websocket
+        )
+        while True:
+            try:
+                # get user chat
+                data = await websocket.receive_text()
+                chat = ChatRequest.model_validate_json(data)
 
-            # make mentor chat
-            answer = ask_question(client, mentor, chat.chat_data).get(
-                "ANSWER", "죄송합니다. 다시 질문해주세요."
-            )
-            answer_data = MentorChatResponse(seq=0, chat_data=answer)
+                # make mentor chat
+                answer = (await ask_question_async(client, mentor, chat.chat_data)).get(
+                    "ANSWER", "죄송합니다. 다시 질문해주세요."
+                )
+                answer_data = MentorChatResponse(seq=0, chat_data=answer)
 
-            # save chat history
-            user_chat_history = await create_chatting(
-                chat.to_chat_history(), user.id, mentor_id, db
-            )
-            mentor_chat_history = await create_chatting(
-                answer_data.to_chat_history(), user.id, mentor_id, db
-            )
+                # save chat history
+                user_chat_history = await create_chatting(
+                    chat.to_chat_history(), user.id, mentor_id, db
+                )
+                mentor_chat_history = await create_chatting(
+                    answer_data.to_chat_history(), user.id, mentor_id, db
+                )
 
-            # send mentor chat
-            await manager.send_direct_message(
-                MentorChatResponse(
-                    seq=mentor_chat_history.seq, chat_data=answer
-                ).model_dump_json(),
-                websocket,
-            )
-        except ValueError as e:
-            await manager.send_direct_message(
-                ChatResponseFail(err=f"Invalid JSON format: {e}").model_dump_json(),
-                websocket,
-            )
-        except Exception as e:
-            logger.error(f"Unexpected error: {e}")
-            await manager.send_direct_message(
-                MentorChatResponse(
-                    seq=0,
-                    chat_data="죄송합니다. 대답할 수 없는 질문입니다. 다르게 질문해주세요. :)",
-                ).model_dump_json(),
-                websocket,
-            )
+                # send mentor chat if websocket is connected
+                if manager.is_connected(websocket):
+                    await manager.send_direct_message(
+                        MentorChatResponse(
+                            seq=mentor_chat_history.seq, chat_data=answer
+                        ).model_dump_json(),
+                        websocket,
+                    )
+            except WebSocketDisconnect:
+                manager.disconnect(websocket)
+                logger.info("WebSocket disconnected")
+                break
+            except ValueError as e:
+                await manager.send_direct_message(
+                    ChatResponseFail(err=f"Invalid JSON format: {e}").model_dump_json(),
+                    websocket,
+                )
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+                await manager.send_direct_message(
+                    MentorChatResponse(
+                        seq=0,
+                        chat_data="죄송합니다. 대답할 수 없는 질문입니다. 다르게 질문해주세요. :)",
+                    ).model_dump_json(),
+                    websocket,
+                )
+    except WebSocketDisconnect:
+        logger.info("WebSocket disconnected")
+    finally:
+        manager.disconnect(websocket)

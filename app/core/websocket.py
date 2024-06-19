@@ -1,5 +1,6 @@
 from fastapi import WebSocket
 
+
 class WebsocketConnectionManager:
     """
     Class for websocket events
@@ -24,6 +25,10 @@ class WebsocketConnectionManager:
     async def send_broadcast(self, data: str):
         for connection in self.connections:
             await connection.send_text(data)
+
+    def is_connected(self, websocket: WebSocket):
+        return websocket in self.connections
+
 
 def get_websocket_manager():
     return WebsocketConnectionManager()

@@ -1,8 +1,8 @@
 import re
 from fastapi import Depends
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 
-from app.feats.prompt.depends import get_openai_client
+from app.feats.prompt.depends import get_openai_async_client, get_openai_client
 from app.settings import settings
 
 OPENAI_MODEL = settings.gpt_model  # "gpt-4o"
@@ -89,6 +89,36 @@ def advanced_moderation(user_input, client: OpenAI = Depends(get_openai_client))
         return temp["choices"][0]["message"]["content"]
 
 
+async def basic_moderation_async(user_input, client: AsyncOpenAI = Depends(get_openai_async_client)):
+    response = await client.moderations.create(input=user_input)
+    moderation_output = response.model_dump()
+
+    test = moderation_output["results"][0]["categories"]
+    for tag in moderation_tags:
+        if test[tag]:
+            return True
+    return False
+
+
+async def advanced_moderation_async(user_input, client: AsyncOpenAI = Depends(get_openai_async_client)):
+    if await basic_moderation_async(user_input, client):
+        return True
+    else:
+        response = await client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": get_moderation_prompt(user_input),
+                },
+                {"role": "user", "content": f"{user_input}"},
+            ],
+        )
+
+        temp = response.model_dump()
+        return temp["choices"][0]["message"]["content"]
+
+
 def extract_score(text: str) -> int:
     # <score>...</score> pattern 찾기
     match = re.search(r'<score>(\d+)</score>', text)
@@ -100,3 +130,8 @@ def extract_score(text: str) -> int:
 
 def check_moderation_violation(user_input, client: OpenAI = Depends(get_openai_client)):
     return extract_score(advanced_moderation(user_input, client)) == 1
+
+
+async def check_moderation_violation_async(user_input, client: AsyncOpenAI = Depends(get_openai_async_client)):
+    result = await advanced_moderation_async(user_input, client)
+    return extract_score(result) == 1

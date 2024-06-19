@@ -2,10 +2,11 @@ import json
 import re
 
 from fastapi import APIRouter, Depends, Query, HTTPException
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .depends import get_mentor_from_path_variable, get_openai_client, get_actions, get_current_action
+from .depends import get_mentor_from_path_variable, get_openai_async_client, get_actions, get_current_action, \
+    get_openai_client
 from .schemas import *
 from .service import *
 from ..mentors.schemas import ActionStatus
@@ -19,13 +20,13 @@ async def make_curriculum(
         request: CurriculumRequest,
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
         db: AsyncSession = Depends(get_async_session),
-        client: OpenAI = Depends(get_openai_client)
+        client: AsyncOpenAI = Depends(get_openai_async_client)
 ):
     """
     멘토의 curriculum을 생성합니다.
     """
     try:
-        response = ask_curriculum(client, mentor, request)
+        response = await ask_curriculum_async(client, mentor, request)
         curriculum = response.get("CURRICULUM", "")
         await save_curriculum(db, mentor, curriculum)
 
@@ -51,12 +52,12 @@ async def get_curriculum(
 async def make_action_suggestions(
         request: ActionSuggestRequest,
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
-        client: OpenAI = Depends(get_openai_client),
+        client: AsyncOpenAI = Depends(get_openai_async_client),
 ):
     """
     멘토의 action suggestion을 3개 생성합니다.
     """
-    suggestion_result = suggest_actions(client, mentor, request.hint)
+    suggestion_result = await suggest_actions_async(client, mentor, request.hint)
     actions = []
     if "ACTIONS" in suggestion_result:
         actions_str = suggestion_result["ACTIONS"]
@@ -68,6 +69,7 @@ async def make_action_suggestions(
         "actions": actions,
         "motivation": motivation
     }
+
 
 @router.get("/{mentor_id}/daily-actions")
 async def get_all_actions(
@@ -104,7 +106,7 @@ async def create_current_action(
         request: CreateCurrentActionRequest,
         db: AsyncSession = Depends(get_async_session),
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
-        client: OpenAI = Depends(get_openai_client),
+        client: AsyncOpenAI = Depends(get_openai_async_client),
 ):
     return await make_current_action(client, db, mentor, request.action)
 
@@ -114,7 +116,7 @@ async def complete_current_action_result(
         request: CompleteActionResultRequest,
         current_action=Depends(get_current_action),
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
-        client: OpenAI = Depends(get_openai_client),
+        client: AsyncOpenAI = Depends(get_openai_async_client),
         db: AsyncSession = Depends(get_async_session),
 ):
     """
@@ -124,18 +126,18 @@ async def complete_current_action_result(
         raise HTTPException(status_code=404, detail="Current action not found")
 
     if request.success:
-        return await complete_action(client, db, mentor, current_action, request.comment)
+        return await complete_action_async(client, db, mentor, current_action, request.comment)
     else:
-        return await giveup_action(client, db, mentor, current_action, request.comment)
+        return await giveup_action_async(client, db, mentor, current_action, request.comment)
 
 
 @router.post("/{mentor_id}/question")
 async def make_question(
         request: QuestionRequest,
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
-        client: OpenAI = Depends(get_openai_client),
+        client: AsyncOpenAI = Depends(get_openai_async_client),
 ):
     """
     질문을 받아 답변을 생성합니다.
     """
-    return ask_question(client, mentor, request.question)
+    return await ask_question_async(client, mentor, request.question)

@@ -1,10 +1,10 @@
 from fastapi import HTTPException
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.mentors.service import update_current_action_result, insert_new_action, \
     update_curriculum, update_complete_current_action, update_curriculum_phase, update_giveup_current_action
-from app.feats.moderation.service import check_moderation_violation
+from app.feats.moderation.service import check_moderation_violation, check_moderation_violation_async
 from app.feats.prompt.const import *
 from app.feats.prompt.schemas import CurriculumRequest
 from app.feats.prompt.utils import extract_tagged_sections, inject_variables
@@ -18,11 +18,12 @@ Curriculum
 """
 
 
-def ask_curriculum(client: OpenAI,
-                   mentor: MentorDTO,
-                   curriculum_request: CurriculumRequest
-                   ):
-    if check_moderation_violation(curriculum_request.hint, client):
+async def ask_curriculum_async(client: AsyncOpenAI,
+                               mentor: MentorDTO,
+                               curriculum_request: CurriculumRequest
+                               ):
+    is_violation = await check_moderation_violation_async(curriculum_request.hint, client)
+    if is_violation:
         raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
@@ -32,7 +33,7 @@ def ask_curriculum(client: OpenAI,
     }
     formatted_prompt = inject_variables(prompt_curriculum, variables)
 
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
             {
@@ -58,7 +59,7 @@ Action
 """
 
 
-def suggest_actions(client, mentor: MentorDTO, hint: str):
+async def suggest_actions_async(client: AsyncOpenAI, mentor: MentorDTO, hint: str):
     variables = {
         "STICC": mentor.get_STICC_to_str(),
         "FIELD": mentor.get_field_to_str(),
@@ -67,7 +68,7 @@ def suggest_actions(client, mentor: MentorDTO, hint: str):
     }
     formatted_prompt = inject_variables(prompt_suggest_three_action, variables)
 
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
             {
@@ -84,13 +85,15 @@ def suggest_actions(client, mentor: MentorDTO, hint: str):
     return extract_tagged_sections(response_content)
 
 
-async def make_current_action(client, db, mentor: MentorDTO, action: str):
+async def make_current_action(client: AsyncOpenAI, db, mentor: MentorDTO, action: str):
+    # TODO: Check if action is valid using openai
     await update_current_action_result(db, mentor.mentor_id, is_active=False, is_done=False)
     return await insert_new_action(db, mentor.mentor_id, action, is_active=True, is_done=False)
 
 
-async def complete_action(client, db, mentor: MentorDTO, action: str, comment: str):
-    if check_moderation_violation(comment, client):
+async def complete_action_async(client: AsyncOpenAI, db, mentor: MentorDTO, action: str, comment: str):
+    is_violation = await check_moderation_violation_async(comment, client)
+    if is_violation:
         raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
@@ -102,7 +105,7 @@ async def complete_action(client, db, mentor: MentorDTO, action: str, comment: s
         "COMMENT": comment
     }
     formatted_prompt = inject_variables(prompt_complete_action, variables)
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
             {
@@ -133,8 +136,9 @@ async def complete_action(client, db, mentor: MentorDTO, action: str, comment: s
     return parsed_response
 
 
-async def giveup_action(client, db, mentor: MentorDTO, action: str, comment: str):
-    if check_moderation_violation(comment, client):
+async def giveup_action_async(client, db, mentor: MentorDTO, action: str, comment: str):
+    is_violation = await check_moderation_violation_async(comment, client)
+    if is_violation:
         raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
@@ -146,7 +150,7 @@ async def giveup_action(client, db, mentor: MentorDTO, action: str, comment: str
         "REASON": comment
     }
     formatted_prompt = inject_variables(prompt_giveup_action, variables)
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
             {
@@ -182,8 +186,9 @@ Question
 """
 
 
-def ask_question(client, mentor: MentorDTO, user_question: str):
-    if check_moderation_violation(user_question, client):
+async def ask_question_async(client, mentor: MentorDTO, user_question: str):
+    is_violation = await check_moderation_violation_async(user_question, client)
+    if is_violation:
         raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
 
     variables = {
@@ -194,7 +199,7 @@ def ask_question(client, mentor: MentorDTO, user_question: str):
         "QUESTION": user_question,
     }
     formatted_prompt = inject_variables(prompt_question, variables)
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
             {

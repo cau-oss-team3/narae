@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_async_session
@@ -12,6 +12,10 @@ from app.settings import settings
 
 def get_openai_client() -> OpenAI:
     return OpenAI(api_key=settings.gpt_key)
+
+
+def get_openai_async_client() -> AsyncOpenAI:
+    return AsyncOpenAI(api_key=settings.gpt_key)
 
 
 def get_embedding(text, client: OpenAI = Depends(settings.gpt_model)):
