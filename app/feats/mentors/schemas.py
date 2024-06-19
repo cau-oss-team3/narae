@@ -114,6 +114,9 @@ class CreateMentorDTO(BaseModel):
             )
         return v
 
+    def get_STICC_to_str(self):
+        return self.mentor_sticc.get_STICC_to_str()
+
 
 class MentorDTO(BaseModel):
     mentor_id: int

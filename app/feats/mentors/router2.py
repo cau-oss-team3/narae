@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from openai import AsyncOpenAI
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -10,6 +11,8 @@ from app.feats.auth.service import get_current_user
 from .models import Mentor2
 from .schemas import MentorDTO, CreateMentorDTO
 from .service import retrieve_current_action
+from ..moderation.service import check_moderation_violation_async
+from ..prompt.depends import get_openai_async_client
 
 router = APIRouter(prefix="/mentors2", tags=["mentors2"])
 
@@ -20,6 +23,7 @@ async def create_mentor(
         input_mentor_detail: CreateMentorDTO,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_async_session),
+        client: AsyncOpenAI = Depends(get_openai_async_client),
 ):
     creator_id = current_user.id
 
@@ -31,6 +35,13 @@ async def create_mentor(
     if len(found_mentor) >= 3:
         raise AuthenticationFailedException(
             status_code=423, message="멘토 최대 생성 제한 도달"
+        )
+
+    is_violation = await check_moderation_violation_async(f"이름: {input_mentor_detail.mentor_name}\n" +
+                                                          input_mentor_detail.get_STICC_to_str(), client)
+    if is_violation:
+        raise AuthenticationFailedException(
+            status_code=400, message="멘토 생성 실패: 입력하신 내용에 부적절한 내용이 포함되어 있습니다."
         )
 
     new_mentor = Mentor2(
@@ -113,12 +124,10 @@ async def get_mentor(
     }
     found_mentor_detail = MentorDTO(**mentor_detail_form)
 
-    # TODO chat data array 반환해주기
     return {
         "isSuccess": True,
         "id": id,
         "mentor_detail": found_mentor_detail,
-        "chat_history": ["기존의 채팅 데이터 불러오기는 아직 지원되지 않습니다. 미래에 지원될 예정입니다. :)"],
     }
 
 
@@ -128,6 +137,7 @@ async def update_mentor(
         input_mentor_detail: CreateMentorDTO,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_async_session),
+        client:AsyncOpenAI = Depends(get_openai_async_client),
 ):
     async with db:
         query = select(Mentor2).filter(id == Mentor2.id, Mentor2.user_id == current_user.id)
@@ -137,6 +147,13 @@ async def update_mentor(
     if found_mentor is None:
         raise AuthenticationFailedException(
             status_code=404, message="해당 멘토 id가 없거나, 찾을 수 없음"
+        )
+
+    is_violation = await check_moderation_violation_async(f"이름: {input_mentor_detail.mentor_name}\n" +
+                                                          input_mentor_detail.get_STICC_to_str(), client)
+    if is_violation:
+        raise AuthenticationFailedException(
+            status_code=400, message="멘토 수정 실패: 입력하신 내용에 부적절한 내용이 포함되어 있습니다."
         )
 
     # input이 비어있지 않으면 db 내용을 바꿔줌
