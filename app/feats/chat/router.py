@@ -34,7 +34,7 @@ async def get_token(
     return token
 
 
-@router.post("/chat-test/{mentor_id}")
+@router.post("/history/{mentor_id}")
 async def create_chat_history(
     mentor_id: int,
     chatting: Chatting,
@@ -45,15 +45,13 @@ async def create_chat_history(
     return {"isSuccess": True, "chat": chat}
 
 
-@router.get("/chat-test/{mentor_id}")
+@router.get("/history/{mentor_id}")
 async def get_chat_history(
     mentor_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-
     found_chat_history = await get_chat_history_list(current_user.id, mentor_id, db)
-
     return {"isSuccess": True, "chat": found_chat_history}
 
 
