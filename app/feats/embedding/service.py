@@ -12,8 +12,44 @@ EMBEDDING_MODEL = settings.gpt_embedding_model
 DIMENSION_OF_MODEL = settings.gpt_embedding_dimension
 
 
+async def read_all_documents(session):
+    async with session:
+        query = select(DocumentChunk.field, DocumentChunk.document)
+        items = (await session.execute(query)).all()
+        return [
+            {
+                "field": "backend" if item.field == 0 else ("frontend" if item.field == 1 else "fullstack"),
+                "document": item.document,
+                "embedding": "not shown"
+            }
+            for item in items
+        ]
+
+
+async def retrieve_similar_document(client: AsyncOpenAI, session, field: int, user_input: str, top_n: int = 3):
+    user_input_embedding = (await get_embedding(client, user_input))[1]
+    query = select(
+        DocumentChunk,
+        1 - DocumentChunk.embedding.cosine_distance(user_input_embedding)
+    ).filter(
+        (DocumentChunk.field == field) & (DocumentChunk.embedding.cosine_distance(user_input_embedding) < 0.4)
+    )
+
+    async with session:
+        items = (await session.execute(query)).all()
+        items = sorted(items, key=lambda x: x[1], reverse=True)
+        return [
+            {
+                "document": item[0].document,
+                "embedding": item[0].embedding.tolist()[0:10],
+                "distance": item[1]
+            }
+            for item in items[:top_n]
+        ]
+
+
 async def save_document_embedding(client: AsyncOpenAI, session, request: CreateDocumentRequest):
-    # TODO: langchain chunker로 변경
+    # TODO: 더 나은 방법으로 텍스트를 나누는 방법 적용하기
     paragraphs = request.document.split("\n")
 
     embeddings = await asyncio.gather(
@@ -28,13 +64,6 @@ async def save_document_embedding(client: AsyncOpenAI, session, request: CreateD
 
     # make embeddings's embedding to smaller size
     return [(embedding[0], embedding[1][:10]) for embedding in embeddings]
-
-
-async def get_document_embedding(session, field, user_input):
-    async with session:
-        query = session.query(DocumentChunk).filter(DocumentChunk.field == field)
-        chunks = await query.all()
-        embeddings = [chunk.embedding for chunk in chunks]
 
 
 async def calculate_similar_vector_item(request, session):
