@@ -54,9 +54,6 @@ async def save_document_embedding(client: AsyncOpenAI, session, request: CreateD
     # Split the document into chunks
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=20, length_function=len)
     chunks = text_splitter.split_text(request.document)
-
-    print(chunks)
-
     if not chunks:
         raise HTTPException(status_code=400, detail="Document could not be split into valid chunks.")
 
