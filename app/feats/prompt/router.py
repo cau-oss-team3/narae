@@ -26,6 +26,7 @@ async def make_curriculum(
     멘토의 curriculum을 생성합니다.
     """
     try:
+        await save_curriculum(db, mentor, "커리큘럼이 생성 중입니다. 잠시 후 다시 시도해주세요.")  # 중복 요청 방지
         response = await ask_curriculum_async(client, mentor, request)
         curriculum = response.get("CURRICULUM", "")
         await save_curriculum(db, mentor, curriculum)

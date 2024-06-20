@@ -32,7 +32,6 @@ async def ask_curriculum_async(client: AsyncOpenAI,
         "HINT": curriculum_request.hint,
     }
     formatted_prompt = inject_variables(prompt_curriculum, variables)
-
     response = await client.chat.completions.create(
         model=settings.gpt_model,
         messages=[
@@ -113,10 +112,10 @@ async def complete_action_async(client: AsyncOpenAI, db, mentor: MentorDTO, acti
                 "content": formatted_prompt + prompt_always_korean
             },
         ],
-        temperature=0.75,
+        temperature=0.70,
         top_p=1,
         frequency_penalty=0,
-        presence_penalty=0.75,
+        presence_penalty=0.65,
     )
     response_content = response.choices[0].message.content.strip()
     parsed_response = extract_tagged_sections(response_content)
@@ -158,10 +157,10 @@ async def giveup_action_async(client, db, mentor: MentorDTO, action: str, commen
                 "content": formatted_prompt + prompt_always_korean
             },
         ],
-        temperature=0.75,
+        temperature=0.70,
         top_p=1,
         frequency_penalty=0,
-        presence_penalty=0.75,
+        presence_penalty=0.65,
     )
     response_content = response.choices[0].message.content.strip()
     parsed_response = extract_tagged_sections(response_content)
@@ -197,6 +196,7 @@ async def ask_question_async(client, mentor: MentorDTO, user_question: str):
         "PHASE": mentor.get_curr_phase(),
         "STICC": mentor.get_STICC_to_str(),
         "QUESTION": user_question,
+        "DOCUMENT_EXCERPTS": "No document excerpts available."
     }
     formatted_prompt = inject_variables(prompt_question, variables)
     response = await client.chat.completions.create(
@@ -206,6 +206,10 @@ async def ask_question_async(client, mentor: MentorDTO, user_question: str):
                 "role": "system",
                 "content": formatted_prompt + prompt_always_korean
             },
+            {
+                "role": "assistant",
+                "content": f"Your name is {mentor.mentor_name}."
+            }
         ],
         temperature=0.5,
         top_p=1,

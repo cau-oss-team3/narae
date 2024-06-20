@@ -28,7 +28,7 @@ async def read_all_documents(session):
         ]
 
 
-async def retrieve_similar_document(client: AsyncOpenAI, session, field: int, user_input: str, top_n: int = 3):
+async def retrieve_similar_document(client: AsyncOpenAI, session, field: int, user_input: str, top_n: int = 3) -> list:
     user_input_embedding = (await get_embedding(client, user_input))[1]
     query = select(
         DocumentChunk,
@@ -71,6 +71,10 @@ async def save_document_embedding(client: AsyncOpenAI, session, request: CreateD
 
 
 async def calculate_similar_vector_item(request, session):
+    """
+    [NOTE]: This is for testing purposes only.
+    Calculate the cosine distance between the given embedding and all embeddings in the database.
+    """
     query = select(
         EmbeddingItem,
         (1 - EmbeddingItem.embedding.cosine_distance(request.embedding)).label('distance')
