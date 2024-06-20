@@ -419,15 +419,17 @@ To assist you in answering the question, here are relevant document excerpts bas
 
 ---
 
-Before providing your explanation, think through how to best formulate it 
-given the context provided about the user's development field, curriculum progress, STICC, and document excerpts. 
+Take a moment to analyze the user's question and the provided context.
+If question is not relevant to the user's current phase or curriculum, gently guide them back to the appropriate topic. 
+Before providing your explanation, think through how to best formulate it given the context provided about the user's development field, curriculum progress, STICC, and document excerpts. 
 
 Capture your thinking process in <SCRATCHPAD> tags like this:
 <SCRATCHPAD>
-[Your thought process for formulating the explanation]
+[Your thought process for formulating the explanation. Consider if your answer has properly addressed the user's question,]
 </SCRATCHPAD>
 
 Now provide your full explanation of the concept to the user inside <ANSWER> tags. Make sure the explanation:
+- Starts with a clear, concise answer to the user's question. If the question is complex, break it down into parts.
 - Is friendly and encouraging in tone
 - Takes into account the user's current knowledge level based on where they are in the curriculum 
 - Is at the appropriate level of difficulty and detail for their stage of learning

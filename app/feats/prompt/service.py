@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from openai import OpenAI, AsyncOpenAI
 
+from app.feats.embedding.service import retrieve_similar_documents
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.mentors.service import update_current_action_result, insert_new_action, \
     update_curriculum, update_complete_current_action, update_curriculum_phase, update_giveup_current_action
@@ -185,7 +186,7 @@ Question
 """
 
 
-async def ask_question_async(client, mentor: MentorDTO, user_question: str):
+async def ask_question_async(client, mentor: MentorDTO, user_question: str, document_excerpts: str = "No document excerpts available."):
     is_violation = await check_moderation_violation_async(user_question, client)
     if is_violation:
         raise HTTPException(status_code=400, detail="다시 시도해주세요. 입력하신 내용에 부적절한 내용이 포함되어 있습니다.")
@@ -196,7 +197,7 @@ async def ask_question_async(client, mentor: MentorDTO, user_question: str):
         "PHASE": mentor.get_curr_phase(),
         "STICC": mentor.get_STICC_to_str(),
         "QUESTION": user_question,
-        "DOCUMENT_EXCERPTS": "No document excerpts available."
+        "DOCUMENT_EXCERPTS": document_excerpts
     }
     formatted_prompt = inject_variables(prompt_question, variables)
     response = await client.chat.completions.create(
@@ -204,12 +205,8 @@ async def ask_question_async(client, mentor: MentorDTO, user_question: str):
         messages=[
             {
                 "role": "system",
-                "content": formatted_prompt + prompt_always_korean
+                "content": f"Your name is {mentor.mentor_name}." + formatted_prompt + prompt_always_korean
             },
-            {
-                "role": "assistant",
-                "content": f"Your name is {mentor.mentor_name}."
-            }
         ],
         temperature=0.5,
         top_p=1,

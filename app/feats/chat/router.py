@@ -19,6 +19,7 @@ from app.feats.chat.schemas import (
 )
 from app.feats.chat.schemas import Chatting
 from app.feats.chat.service import create_chatting, get_chat_history_list
+from app.feats.embedding.service import retrieve_similar_documents
 from app.feats.mentors.schemas import MentorDTO
 from app.feats.prompt.depends import get_openai_async_client, get_mentor_from_path_variable
 from app.feats.prompt.service import ask_question_async
@@ -94,8 +95,15 @@ async def websocket_endpoint(
                 data = await websocket.receive_text()
                 chat = ChatRequest.model_validate_json(data)
 
+                document_excerpts = ""
+                similar_documents = await retrieve_similar_documents(
+                    client, db, mentor.mentor_field, chat.chat_data, 3
+                )
+                for idx, item in enumerate(similar_documents, 1):
+                    document_excerpts += f"{idx}. [Document {idx}]\n   {item['document']}\n\n"
+
                 # make mentor chat
-                answer = (await ask_question_async(client, mentor, chat.chat_data)).get(
+                answer = (await ask_question_async(client, mentor, chat.chat_data, document_excerpts)).get(
                     "ANSWER", "죄송합니다. 다시 질문해주세요."
                 )
                 answer_data = MentorChatResponse(seq=0, chat_data=answer)

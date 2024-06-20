@@ -28,7 +28,7 @@ async def read_all_documents(session):
         ]
 
 
-async def retrieve_similar_document(client: AsyncOpenAI, session, field: int, user_input: str, top_n: int = 3) -> list:
+async def retrieve_similar_documents(client: AsyncOpenAI, session, field: int, user_input: str, top_n: int = 3) -> list:
     user_input_embedding = (await get_embedding(client, user_input))[1]
     query = select(
         DocumentChunk,

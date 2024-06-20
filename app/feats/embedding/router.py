@@ -6,7 +6,7 @@ from app.core.database import get_async_session
 from app.feats.embedding.models import EmbeddingItem
 from app.feats.embedding.schemas import CreateVectorItemRequest, PatchVectorItemRequest, CreateDocumentRequest
 from app.feats.embedding.service import num_tokens_from_string, save_document_embedding, get_embedding, \
-    calculate_similar_vector_item, retrieve_similar_document, read_all_documents
+    calculate_similar_vector_item, retrieve_similar_documents, read_all_documents
 from app.feats.prompt.depends import get_openai_async_client
 
 router = APIRouter(prefix="/embedding", tags=["embedding"])
@@ -27,7 +27,7 @@ async def get_similar_document(
         client: AsyncOpenAI = Depends(get_openai_async_client),
         session: AsyncSession = Depends(get_async_session)
 ):
-    return await retrieve_similar_document(client, session, field, user_input, top_n)
+    return await retrieve_similar_documents(client, session, field, user_input, top_n)
 
 
 @router.post("/documents", description="Test saving document to db")
