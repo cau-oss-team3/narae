@@ -1,8 +1,10 @@
 import asyncio
 
 import tiktoken
+from fastapi import HTTPException
 from openai import AsyncOpenAI
 from sqlalchemy import select
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app.feats.embedding.models import DocumentChunk, EmbeddingItem
 from app.feats.embedding.schemas import CreateDocumentRequest
@@ -32,7 +34,7 @@ async def retrieve_similar_document(client: AsyncOpenAI, session, field: int, us
         DocumentChunk,
         1 - DocumentChunk.embedding.cosine_distance(user_input_embedding)
     ).filter(
-        (DocumentChunk.field == field) & (DocumentChunk.embedding.cosine_distance(user_input_embedding) < 0.4)
+        (DocumentChunk.field == field) & (DocumentChunk.embedding.cosine_distance(user_input_embedding) < 0.5)
     )
 
     async with session:
@@ -49,11 +51,17 @@ async def retrieve_similar_document(client: AsyncOpenAI, session, field: int, us
 
 
 async def save_document_embedding(client: AsyncOpenAI, session, request: CreateDocumentRequest):
-    # TODO: 더 나은 방법으로 텍스트를 나누는 방법 적용하기
-    paragraphs = request.document.split("\n")
+    # Split the document into chunks
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=20, length_function=len)
+    chunks = text_splitter.split_text(request.document)
+
+    print(chunks)
+
+    if not chunks:
+        raise HTTPException(status_code=400, detail="Document could not be split into valid chunks.")
 
     embeddings = await asyncio.gather(
-        *[get_embedding(client, paragraph) for paragraph in paragraphs]
+        *[get_embedding(client, chunk) for chunk in chunks]
     )
 
     async with session:
@@ -62,7 +70,6 @@ async def save_document_embedding(client: AsyncOpenAI, session, request: CreateD
             session.add(chunk)
         await session.commit()
 
-    # make embeddings's embedding to smaller size
     return [(embedding[0], embedding[1][:10]) for embedding in embeddings]
 
 
