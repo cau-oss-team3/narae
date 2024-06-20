@@ -1,6 +1,7 @@
 import sys
 import asyncio
 
+import pgvector
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
@@ -74,7 +75,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    if sys.platform == "win32": # For windows
+    if sys.platform == "win32":  # For windows
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     connectable = engine_from_config(
@@ -84,6 +85,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        connection.dialect.ischema_names['vector'] = pgvector.sqlalchemy.Vector
         context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():

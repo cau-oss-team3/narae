@@ -1,12 +1,9 @@
-import json
 import re
 
-from fastapi import APIRouter, Depends, Query, HTTPException
-from openai import OpenAI, AsyncOpenAI
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .depends import get_mentor_from_path_variable, get_openai_async_client, get_actions, get_current_action, \
-    get_openai_client
+from .depends import get_mentor_from_path_variable, get_openai_async_client, get_actions, get_current_action
 from .schemas import *
 from .service import *
 from ..mentors.schemas import ActionStatus
@@ -26,6 +23,7 @@ async def make_curriculum(
     멘토의 curriculum을 생성합니다.
     """
     try:
+        await save_curriculum(db, mentor, "커리큘럼이 생성 중입니다. 잠시 후 다시 시도해주세요.")  # 중복 요청 방지
         response = await ask_curriculum_async(client, mentor, request)
         curriculum = response.get("CURRICULUM", "")
         await save_curriculum(db, mentor, curriculum)
@@ -135,9 +133,17 @@ async def complete_current_action_result(
 async def make_question(
         request: QuestionRequest,
         mentor: MentorDTO = Depends(get_mentor_from_path_variable),
+        session: AsyncSession = Depends(get_async_session),
         client: AsyncOpenAI = Depends(get_openai_async_client),
 ):
     """
     질문을 받아 답변을 생성합니다.
     """
-    return await ask_question_async(client, mentor, request.question)
+    document_excerpts = ""
+    similar_documents = await retrieve_similar_documents(
+        client, session, mentor.mentor_field, request.question, 3
+    )
+    for idx, item in enumerate(similar_documents, 1):
+        document_excerpts += f"{idx}. [Document {idx}]\n   {item['document']}\n\n"
+
+    return await ask_question_async(client, mentor, request.question, document_excerpts)

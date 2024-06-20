@@ -203,6 +203,7 @@ Offer insights, suggestions, and encouragement to help them progress in their le
 
 Next, update the user's curriculum phase to reflect their completion of the action. 
 Summarize the content they have already covered and incorporate the newly completed action into the updated phase description.
+This phase summary should be updated based on curriculum and the user's current progress and should reflect the completed action.
 This phase summary will be saved in the database for later use in calibration.
 
 All output must be in markdown format.
@@ -228,7 +229,7 @@ Your aim is to provide valuable guidance and support to help the user advance in
 prompt_giveup_action = """
 You will be helping a user who is considering giving up on their current learning action. 
 Your goal is to empathize with their situation, 
-summarize the giveup reason for internal use, suggest a new action, and motivate them to keep going.
+Summarize the give up reason for internal use, suggest a new action, and motivate them to keep going.
 
 here is the specific development field the user is focused on:
 <FIELD>
@@ -255,7 +256,7 @@ here is user's current trying action:
 {{ACTION}}
 </ACTION>
 
-here is the giveup reason provided by the user:
+here is the give up reason provided by the user:
 <REASON>
 {{REASON}}
 </REASON>
@@ -265,9 +266,10 @@ here is the giveup reason provided by the user:
 First, acknowledge the user's reason for wanting to give up and provide empathetic feedback. 
 Let them know that their feelings are valid and that challenges are a normal part of the learning process.
 
-Next, update the user's curriculum phase to reflect their completion of the action inside <UPDATED_PHASE> tags. 
+Next, update the user's curriculum phase to reflect their give up of the action inside <UPDATED_PHASE> tags.
 Summarize the content they have already covered and incorporate the reason they want to give up in a concise statement
 into the updated phase description.
+This phase summary should be updated based on curriculum and the user's current progress and should reflect the action they gave up.
 This phase summary will be saved in the database for later use in calibration.  
 
 Then, carefully analyze the STICC information,
@@ -410,17 +412,24 @@ And here is the specific question the user has asked:
 {{QUESTION}}
 </QUESTION>
 
+To assist you in answering the question, here are relevant document excerpts based on embeddings and similarity to the user's question and context:
+<DOCUMENT_EXCERPTS>
+{{DOCUMENT_EXCERPTS}}
+</DOCUMENT_EXCERPTS>
+
 ---
 
-Before providing your explanation, think through how to best formulate it 
-given the context provided about the user's development field, curriculum progress, and STICC. 
+Take a moment to analyze the user's question and the provided context.
+If question is not relevant to the user's current phase or curriculum, gently guide them back to the appropriate topic. 
+Before providing your explanation, think through how to best formulate it given the context provided about the user's development field, curriculum progress, STICC, and document excerpts. 
 
 Capture your thinking process in <SCRATCHPAD> tags like this:
 <SCRATCHPAD>
-[Your thought process for formulating the explanation]
+[Your thought process for formulating the explanation. Consider if your answer has properly addressed the user's question,]
 </SCRATCHPAD>
 
 Now provide your full explanation of the concept to the user inside <ANSWER> tags. Make sure the explanation:
+- Starts with a clear, concise answer to the user's question. If the question is complex, break it down into parts.
 - Is friendly and encouraging in tone
 - Takes into account the user's current knowledge level based on where they are in the curriculum 
 - Is at the appropriate level of difficulty and detail for their stage of learning
