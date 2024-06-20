@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     gpt_key: str
     gpt_model: str = "gpt-4o"
     gpt_embedding_model: str = "text-embedding-3-small"
-
+    gpt_embedding_dimension: int = 1536  # default dimension of "text-embedding-3-small"
 
 
 def get_settings():
