@@ -11,6 +11,7 @@ from app.feats.feedback.router import router as feedback_router
 from app.feats.moderation.router import router as moderation_router
 from app.feats.embedding.router import router as embedding_router
 
+
 def apply_routes(app: FastAPI) -> FastAPI:
     """
     Register all routers to the FastAPI app.
@@ -25,7 +26,7 @@ def apply_routes(app: FastAPI) -> FastAPI:
     app.include_router(healthcheck_router)
     app.include_router(embedding_router)
 
-    app.include_router(item_router)  # NOTE: For demonstration
-    app.include_router(debug_router)  # NOTE: For simple gpt api testing
+    # app.include_router(item_router)  # NOTE: For demonstration
+    # app.include_router(debug_router)  # NOTE: For simple gpt api testing
 
     return app
